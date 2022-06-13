@@ -1,0 +1,5 @@
+Application/build
+Application/release
+.idea
+.gradle
+.google
