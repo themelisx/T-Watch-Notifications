@@ -65,7 +65,7 @@ void displayTime(boolean fullUpdate) {
 
     ////Get date
     char date[15];
-    memcpy(date, " ", 15);
+    memset(date, 0, 15);
     sprintf(date, "%s %d/%d/%d", dayOfWeek, dday, mmonth, yyear);
 
     ////Print date
@@ -80,7 +80,7 @@ void displayTime(boolean fullUpdate) {
       p = 100;
     }
     char percentage[5];
-    memcpy(percentage, " ", 5);
+    memset(percentage, 0, 5);
     sprintf(percentage, "%d%%", p);
 
     ////Print battery

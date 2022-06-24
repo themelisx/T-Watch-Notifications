@@ -33,7 +33,7 @@ void low_energy() {
       #else
         if(notif_new){
           notif_new = false;
-          viewNewNotif();
+          viewNewNotification();
         } else {
           displayTime(true);
         }

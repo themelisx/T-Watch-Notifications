@@ -52,7 +52,7 @@ void alertNewNotification(String value) {
 
 ///////////////////////////////////////////////////////////////////// NOTIFICATION FUNCTIONS
 
-void viewNewNotif(){
+void viewNewNotification(){
   Screen = "notif";
   ttgo->tft->fillScreen(TFT_BLACK);
   ttgo->tft->setCursor(5,5);

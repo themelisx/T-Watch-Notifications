@@ -209,7 +209,7 @@ void setup() {
 ///////////////////////////////////////////////////////////////////// SETUP END - LOOP START
 
 void loop() {
-  /*
+  
   if (axpIrq) {
     axpIrq = false;
     ttgo->power->readIRQ();
@@ -233,12 +233,12 @@ void loop() {
 
 #ifdef BLE_NOTIFICATIONS
        if (y > 190 && y < 210) {
-        viewNewNotif();
+        viewNewNotification();
       }
 #endif
      }
    }
-   */
+   
    delay(50);
 }
 
