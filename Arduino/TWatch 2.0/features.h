@@ -1,0 +1,1 @@
+#define BLE_NOTIFICATIONS

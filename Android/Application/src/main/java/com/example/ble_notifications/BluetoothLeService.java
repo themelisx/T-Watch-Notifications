@@ -39,8 +39,6 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.example.ble_communication.R;
-
 import java.util.List;
 import java.util.UUID;
 
