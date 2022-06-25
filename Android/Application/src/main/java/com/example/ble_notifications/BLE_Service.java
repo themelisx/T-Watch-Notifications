@@ -33,7 +33,6 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
-import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -46,9 +45,9 @@ import java.util.UUID;
  * Service for managing connection and data communication with a GATT server hosted on a
  * given Bluetooth LE device.
  */
-public class BluetoothLeService extends Service {
+public class BLE_Service extends Service {
 
-    private final static String TAG = BluetoothLeService.class.getSimpleName();
+    private final static String TAG = BLE_Service.class.getSimpleName();
 
     public static final String CHANNEL_ID = "com.example.UPDATE_SERVICE";
 
@@ -84,6 +83,11 @@ public class BluetoothLeService extends Service {
     public final static UUID UUID_WRITE_TO_ESP =
             UUID.fromString("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        return START_STICKY;
+    }
+
     // Implements callback methods for GATT events that the app cares about.  For example,
     // connection change and services discovered.
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -97,9 +101,7 @@ public class BluetoothLeService extends Service {
                 broadcastUpdate(intentAction);
                 Log.i(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
-                Log.i(TAG, "Attempting to start service discovery:" +
-                        mBluetoothGatt.discoverServices());
-
+                Log.i(TAG, "Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
@@ -127,18 +129,15 @@ public class BluetoothLeService extends Service {
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
                                          int status) {
-            //Log.e(TAG, "2");
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
-
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
-            //Log.e(TAG, "3");
         }
     };
 
@@ -159,63 +158,48 @@ public class BluetoothLeService extends Service {
     }
 
     public class LocalBinder extends Binder {
-        BluetoothLeService getService() {
-            return BluetoothLeService.this;
+        BLE_Service getService() {
+            return BLE_Service.this;
         }
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Foreground Service Channel",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            manager.createNotificationChannel(serviceChannel);
-        }
+        NotificationChannel serviceChannel = new NotificationChannel(
+                CHANNEL_ID,
+                "Foreground Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+        );
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        manager.createNotificationChannel(serviceChannel);
     }
 
     public void onCreate() {
         super.onCreate();
-
         createNotificationChannel();
 
-        Intent notificationIntent = new Intent(this.getApplicationContext(), BluetoothLeService.class);
+        Intent notificationIntent = new Intent(this.getApplicationContext(), MainActivity.class);
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(this.getApplicationContext(), 300, notificationIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this.getApplicationContext(), CHANNEL_ID)
                 .setContentTitle("ESP32 Smartwatch")
-                .setContentText("BLE Gatt Server Is Running...")
+                .setContentText("BLE Server Up and Running")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(pendingIntent)
                 .build();
 
         startForeground(1, notification);
-
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-
-        Log.i(TAG, "Started BLE Handler Service with ID:" + startId);
-        isRunning = true;
-
-        return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        Log.i(TAG, "Device Disconnected, BLESend service is now ending");
-
         isRunning = false;
-
         super.onDestroy();
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        isRunning = true;
         return mBinder;
     }
 
@@ -236,8 +220,7 @@ public class BluetoothLeService extends Service {
      * @return Return true if the initialization is successful.
      */
     public boolean initialize() {
-        // For API level 18 and above, get a reference to BluetoothAdapter through
-        // BluetoothManager.
+
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager == null) {
@@ -264,7 +247,8 @@ public class BluetoothLeService extends Service {
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
-    public boolean connect(final String address) {
+    public boolean connect(String address) {
+        Log.i(TAG, "Connecting to:" + address);
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
             return false;
@@ -316,9 +300,7 @@ public class BluetoothLeService extends Service {
      * released properly.
      */
     public void close() {
-        if (mBluetoothGatt == null) {
-            return;
-        }
+        if (mBluetoothGatt == null) return;
         mBluetoothGatt.close();
         mBluetoothGatt = null;
     }

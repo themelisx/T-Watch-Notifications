@@ -11,5 +11,4 @@ class NotificationBundle implements Serializable {
     String title;
     String text;
     String subText;
-
 }

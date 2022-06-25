@@ -19,19 +19,28 @@ into a string which can be read in MainActivity
 This file follows the example provided by github user kpbird which can be found here:
         https://github.com/kpbird/NotificationListenerService-Example
  */
-public class NLService extends NotificationListenerService {
+public class NotificationService extends NotificationListenerService {
+
+    // Constants
+    private final String TAG = this.getClass().getSimpleName();
 
     public final static String NOTIFICATION_ACTION = "com.example.NOTIFICATION_LISTENER_EXAMPLE";
     public final static String GET_NOTIFICATION_INTENT = "com.example.NOTIFICATION_LISTENER_SERVICE_EXAMPLE";
 
-    private String TAG = this.getClass().getSimpleName();
+    // Global variables
     private NLServiceReceiver nlServiceReceiver;
+
+    // Service functions
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // Keep the service alive
+        return START_STICKY;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        Log.i(TAG, "Notification Listener Service created");
         nlServiceReceiver = new NLServiceReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(GET_NOTIFICATION_INTENT);
@@ -42,14 +51,6 @@ public class NLService extends NotificationListenerService {
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(nlServiceReceiver);
-    }
-
-    String Trim(String data) {
-        if (data.length() > 20) {
-            return data.substring(0, 19) + "...";
-        } else {
-            return data;
-        }
     }
 
     @Override
@@ -90,6 +91,16 @@ public class NLService extends NotificationListenerService {
         }
     }
 
+    // Private functions
+    private String Trim(String data) {
+        if (data.length() > 20) {
+            return data.substring(0, 19) + "...";
+        } else {
+            return data;
+        }
+    }
+
+    // Internal classes
     class NLServiceReceiver extends BroadcastReceiver {
 
         @Override
@@ -99,14 +110,14 @@ public class NLService extends NotificationListenerService {
 
             if (incomingIntent.getStringExtra("command").equals("clearall")) {
                 Log.i(TAG, "Clear All");
-                NLService.this.cancelAllNotifications();
+                NotificationService.this.cancelAllNotifications();
 
             } else if (incomingIntent.getStringExtra("command").equals("list")) {
                 Log.i(TAG, "Reading notifications list");
 
                 NotificationList notificationList = new NotificationList();
 
-                for (StatusBarNotification sbn : NLService.this.getActiveNotifications()) {
+                for (StatusBarNotification sbn : NotificationService.this.getActiveNotifications()) {
 
                     Notification n = sbn.getNotification();
                     if (n.category != null && !n.category.equalsIgnoreCase("sys")) {
