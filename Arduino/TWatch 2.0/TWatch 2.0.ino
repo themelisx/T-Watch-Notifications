@@ -44,11 +44,11 @@ bool axpIrq;
 bool keepAwake = false;
 
 #ifdef BLE_NOTIFICATIONS
-int notif_count = 0;
+int notification_count = 0;
 
-bool notif_new = false;
+bool notification_new = false;
 
-String newNotif;
+String newNotification;
 
 char tmp_buffer[256];
 
