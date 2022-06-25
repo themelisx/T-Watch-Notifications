@@ -11,34 +11,45 @@
         android:text="Basic BLE communication test"
         />
 
-    <EditText
-        android:id="@+id/text_to_send"
-        android:hint="Type here the data for the ESP"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btn_send"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="8dp"
-        android:text="Send data to ESP"
-        />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_start_service"
+            android:layout_weight="50"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Start service"
+            />
+
+        <Button
+            android:id="@+id/btn_stop_service"
+            android:layout_width="0dp"
+            android:layout_weight="50"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="Stop service"
+            />
+
+    </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"/>
 
-    <Button
-        android:id="@+id/get_list"
-        android:text="Get notification list"
+    <RelativeLayout
+        android:id="@+id/list_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="match_parent">
 
-    <ListView
-        android:id="@+id/data_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <ListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 
+    </RelativeLayout>
 
 </LinearLayout>
