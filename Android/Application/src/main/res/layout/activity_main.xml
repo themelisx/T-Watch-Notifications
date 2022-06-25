@@ -36,16 +36,9 @@
 
     </LinearLayout>
 
-
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"/>
-
-    <Button
-        android:id="@+id/get_list"
-        android:text="Get available BT devices"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
 
     <RelativeLayout
         android:id="@+id/list_container"

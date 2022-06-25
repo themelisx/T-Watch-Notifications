@@ -19,7 +19,7 @@ public class BootCompleteReceiver extends BroadcastReceiver {
             Log.i(TAG, "Action BOOT_COMPLETED");
 
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-            String mDeviceAddress = sharedPreferences.getString(DEVICE_ADDRESS, "xx:xx:xx:xx:xx");
+            String mDeviceAddress = sharedPreferences.getString(DEVICE_ADDRESS, "00:00:00:00:00");
 
             Intent mainService = new Intent(context, MainService.class);
             mainService.putExtra(DEVICE_ADDRESS, mDeviceAddress);

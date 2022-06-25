@@ -91,7 +91,9 @@ public class NotificationService extends NotificationListenerService {
         }
     }
 
-    // Private functions
+    ///////////////////////
+    // Private functions //
+    ///////////////////////
     private String Trim(String data) {
         if (data.length() > 20) {
             return data.substring(0, 19) + "...";
@@ -100,7 +102,9 @@ public class NotificationService extends NotificationListenerService {
         }
     }
 
-    // Internal classes
+    //////////////////////
+    // Internal classes //
+    //////////////////////
     class NLServiceReceiver extends BroadcastReceiver {
 
         @Override

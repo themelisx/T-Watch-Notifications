@@ -12,9 +12,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -31,31 +33,37 @@ public class MainService extends Service {
 
     // Constants
     private final static String TAG = MainService.class.getSimpleName();
+
+    private final String LIST_NAME = "NAME";
+    private final String LIST_UUID = "UUID";
+
     public static final String DEVICE_ADDRESS = "device_address";
 
     public final static String NOTIFICATION_ACTION = "com.example.NOTIFICATION_LISTENER_EXAMPLE";
     public final static String GET_NOTIFICATION_INTENT = "com.example.NOTIFICATION_LISTENER_SERVICE_EXAMPLE";
 
-    private NotificationReceiver nReceiver = new NotificationReceiver();
+    // Global variables
+    private boolean mConnected = false;
     private String mDeviceAddress;
     private BLE_Service mBLEService;
+    private NotificationReceiver nReceiver = new NotificationReceiver();
     private ArrayList<ArrayList<BluetoothGattCharacteristic>> mGattCharacteristics = new ArrayList<ArrayList<BluetoothGattCharacteristic>>();
-    public static boolean mConnected = false;
     private BluetoothGattCharacteristic mNotifyCharacteristic;
     private BluetoothGattCharacteristic mWriteCharacteristic;
-
-    private final String LIST_NAME = "NAME";
-    private final String LIST_UUID = "UUID";
 
     public MainService() {
     }
 
+    ///////////////////////
+    // Service functions //
+    ///////////////////////
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             mDeviceAddress = intent.getStringExtra(DEVICE_ADDRESS);
         } else {
-            mDeviceAddress = "";
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            mDeviceAddress = sharedPreferences.getString(DEVICE_ADDRESS, "00:00:00:00:00");
         }
 
         registerReceiver(nReceiver, makeNLServiceIntentFilter());
@@ -69,7 +77,8 @@ public class MainService extends Service {
             final boolean result = mBLEService.connect(mDeviceAddress);
             Log.d(TAG, "Connect request result=" + result);
         }*/
-        return START_STICKY;
+
+        return START_STICKY; // Keep the service alive
     }
 
     @Override
@@ -77,7 +86,6 @@ public class MainService extends Service {
         unbindService(mServiceConnection);
         unregisterReceiver(mGattUpdateReceiver);
         unregisterReceiver(nReceiver);
-
         super.onDestroy();
     }
 
@@ -87,47 +95,15 @@ public class MainService extends Service {
         return null;
     }
 
-    public String getApplicationName(String packageName) {
-        Log.e(TAG, "get: " + packageName);
+    ///////////////////////
+    // Private functions //
+    ///////////////////////
+    private String getApplicationName(String packageName) {
         try {
             PackageManager pm = getPackageManager();
-            //ApplicationInfo ai = pm.getApplicationInfo(packageName, 0);
             return (String) pm.getApplicationLabel(pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA));
         } catch (PackageManager.NameNotFoundException e) {
             return "Unknown app";
-        }
-    }
-
-    class NotificationReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-
-            if (intent.hasExtra("type")) {
-                Bundle extras = intent.getExtras();
-                String type = extras.getString("type");
-                NotificationBundle notificationBundle = new NotificationBundle();
-
-                if (type.equalsIgnoreCase("new_notification")) {
-
-                    notificationBundle.id = extras.getInt("id", 0);
-                    notificationBundle.pName = extras.getString("package", "");
-                    notificationBundle.appName = getApplicationName(notificationBundle.pName);
-                    notificationBundle.category = extras.getString("category", "");
-                    notificationBundle.title = extras.getString("title", "");
-                    notificationBundle.text = extras.getString("text", "");
-                    if (notificationBundle.category.equals("email")) {
-                        notificationBundle.subText = extras.getString("sub_text", "");
-                    }
-                    sendData("NEW_NOTIFICATION=" + new Gson().toJson(notificationBundle));
-
-                } else if (type.equalsIgnoreCase("list_notification")) {
-
-                    sendData("NOTIFICATION_LIST=" + extras.getString("data", ""));
-
-                } else {
-                    Log.e(TAG, "Unknown type:" + type);
-                }
-            }
         }
     }
 
@@ -150,12 +126,6 @@ public class MainService extends Service {
         }
     };
 
-    // Handles various events fired by the Service.
-    // ACTION_GATT_CONNECTED: connected to a GATT server.
-    // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
-    // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-    // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-    //                        or notification operations.
     private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -210,7 +180,7 @@ public class MainService extends Service {
         }
     };
 
-    public void sendData(String data) {
+    private void sendData(String data) {
 
         if (mConnected) {
             if (mWriteCharacteristic != null) {
@@ -242,15 +212,17 @@ public class MainService extends Service {
         return intentFilter;
     }
 
-    public void doDisconnect(View view) {
+    private void doDisconnect(View view) {
         if (mBLEService != null) {
             mBLEService.disconnect();
         }
     }
 
+    /**
     // Demonstrates how to iterate through the supported GATT Services/Characteristics.
     // In this sample, we populate the data structure that is bound to the ExpandableListView
     // on the UI.
+    */
     private void displayGattServices(List<BluetoothGattService> gattServices) {
         if (gattServices == null) return;
         String uuid = null;
@@ -298,6 +270,42 @@ public class MainService extends Service {
             }
             mGattCharacteristics.add(charas);
             gattCharacteristicData.add(gattCharacteristicGroupData);
+        }
+    }
+
+    //////////////////////
+    // Internal classes //
+    //////////////////////
+    class NotificationReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (intent.hasExtra("type")) {
+                Bundle extras = intent.getExtras();
+                String type = extras.getString("type");
+                NotificationBundle notificationBundle = new NotificationBundle();
+
+                if (type.equalsIgnoreCase("new_notification")) {
+
+                    notificationBundle.id = extras.getInt("id", 0);
+                    notificationBundle.pName = extras.getString("package", "");
+                    notificationBundle.appName = getApplicationName(notificationBundle.pName);
+                    notificationBundle.category = extras.getString("category", "");
+                    notificationBundle.title = extras.getString("title", "");
+                    notificationBundle.text = extras.getString("text", "");
+                    if (notificationBundle.category.equals("email")) {
+                        notificationBundle.subText = extras.getString("sub_text", "");
+                    }
+                    sendData("NEW_NOTIFICATION=" + new Gson().toJson(notificationBundle));
+
+                } else if (type.equalsIgnoreCase("list_notification")) {
+
+                    sendData("NOTIFICATION_LIST=" + extras.getString("data", ""));
+
+                } else {
+                    Log.e(TAG, "Unknown type:" + type);
+                }
+            }
         }
     }
 }
