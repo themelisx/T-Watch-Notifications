@@ -22,8 +22,8 @@ void displayTime(boolean fullUpdate) {
 
   if (fullUpdate) {
     lastTouch = millis();
-    Serial.println(lastTouch);
-    Serial.println("display time");
+    DEBUG_SERIAL.println(lastTouch);
+    DEBUG_SERIAL.println("display time");
 
     ////Get date of week in words
     weekDay = ttgo->rtc->getDayOfWeek(dday, mmonth, yyear);

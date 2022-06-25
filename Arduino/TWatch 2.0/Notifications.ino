@@ -4,7 +4,7 @@
 
 
 void getNotificationList() {
-    Serial.println("Requesting notification list...");
+    DEBUG_SERIAL.println("Requesting notification list...");
     int notificationType = 0; //All notifications
     sprintf(tmp_buffer, "GET_NOTIF_LIST=%d", notificationType);
     pCharacteristic->setValue(tmp_buffer);
@@ -12,15 +12,15 @@ void getNotificationList() {
 }
 
 void createNotificationList(String value) {
-  Serial.println("createNotificationList:");
-  Serial.println(value);
+  DEBUG_SERIAL.println("createNotificationList:");
+  DEBUG_SERIAL.println(value);
 }
 
 void parseCommand(String value) {
 
     if (value.startsWith("ECHO=")) {
       value.replace("ECHO=", "");
-      Serial.println(value);
+      DEBUG_SERIAL.println(value);
     } else if (value.startsWith("NOTIFICATION_LIST")) {
       value.replace("NOTIFICATION_LIST=", "");
       createNotificationList(value);      
@@ -30,14 +30,14 @@ void parseCommand(String value) {
     } else if (value.startsWith("GET_LIST")) {
       getNotificationList();
     } else {
-      Serial.print("Unknown command: ");
-      Serial.println(value);
+      DEBUG_SERIAL.print("Unknown command: ");
+      DEBUG_SERIAL.println(value);
     }
 }
 
 void alertNewNotification(String value) {
-    Serial.print("New notification: ");
-    Serial.println(value);
+    DEBUG_SERIAL.print("New notification: ");
+    DEBUG_SERIAL.println(value);
     // Do something to alert user for the new notification:
     newNotification = value;
     notification_count++;

@@ -19,6 +19,9 @@
 #include "config.h"
 #include <soc/rtc.h>
 
+#define DEBUG false  //set to true for debug output, false for no debug output
+#define DEBUG_SERIAL if(DEBUG)Serial
+
 #define vibrationPin 4
 
 #define TFT_DEEPGREY 0x121414
@@ -90,13 +93,13 @@ extern void parseCommand(String value);
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
-      Serial.println("Device connected");
+      DEBUG_SERIAL.println("Device connected");
       deviceConnected = true;
 
     };
 
     void onDisconnect(BLEServer* pServer) {
-      Serial.println("Device disconnected");
+      DEBUG_SERIAL.println("Device disconnected");
       deviceConnected = false;
 
       delay(100);
@@ -108,14 +111,14 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
 
-      //Serial.println("Received value:");
+      //DEBUG_SERIAL.println("Received value:");
 
       if (rxValue.length() > 0) {
 
         for (int i = 0; i < rxValue.length(); i++) {
-          Serial.print(rxValue[i]);
+          DEBUG_SERIAL.print(rxValue[i]);
         }
-        Serial.println(" ");
+        DEBUG_SERIAL.println(" ");
 
         String value = rxValue.c_str();
         parseCommand(value);
@@ -149,9 +152,9 @@ void setup() {
   //Synchronize time to system time
   ttgo->rtc->syncToSystem();
 
-  Serial.begin(115200);
+  DEBUG_SERIAL.begin(115200);
 
-  Serial.println("Starting setup...");
+  DEBUG_SERIAL.println("Starting setup...");
 
   pinMode(vibrationPin, OUTPUT);
 
@@ -173,7 +176,7 @@ void setup() {
   yyear = tnow.year;
 
   #ifdef BLE_NOTIFICATIONS
-  Serial.println("Notifications enabled");
+  DEBUG_SERIAL.println("Notifications enabled");
   // Create the BLE Device
   BLEDevice::init("BLE-ESP32");  // Give it a name
 
@@ -202,7 +205,7 @@ void setup() {
 
   // Start advertising
   pServer->getAdvertising()->start();
-  Serial.println("Waiting connection...");
+  DEBUG_SERIAL.println("Waiting connection...");
 #endif
 }
 
@@ -214,7 +217,7 @@ void loop() {
     axpIrq = false;
     ttgo->power->readIRQ();
     if (ttgo->power->isPEKShortPressIRQ()) {
-      Serial.println("button pressed");
+      DEBUG_SERIAL.println("button pressed");
       low_energy();
     }
     if (ttgo->power->isVbusPlugInIRQ()) {
