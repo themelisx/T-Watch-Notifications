@@ -39,13 +39,15 @@ void alertNewNotification(String value) {
     Serial.print("New notification: ");
     Serial.println(value);
     // Do something to alert user for the new notification:
-    newNotif = value;
-    notif_count++;
+    newNotification = value;
+    notification_count++;
     vibrate(50);
     delay(50);
     vibrate(50);
-    notif_new = true;
-    low_energy();
+    notification_new = true;
+    if(!ttgo->bl->isOn()){
+      low_energy();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////// BLUETOOTH END
@@ -53,9 +55,11 @@ void alertNewNotification(String value) {
 ///////////////////////////////////////////////////////////////////// NOTIFICATION FUNCTIONS
 
 void viewNewNotification(){
-  Screen = "notif";
+  
+  Screen = "notification_view";
+  ttgo->tft->setTextSize(2);
   ttgo->tft->fillScreen(TFT_BLACK);
   ttgo->tft->setCursor(5,5);
-  ttgo->tft->println(newNotif);
+  ttgo->tft->println(newNotification);
 }
 #endif

@@ -91,7 +91,7 @@ void displayTime(boolean fullUpdate) {
 
 #ifdef BLE_NOTIFICATIONS
     ////Draw notification widget
-    sprintf(tmp_buffer, "Notifications: %d", notif_count);
+    sprintf(tmp_buffer, "Notifications: %d", notification_count);
 
     ttgo->tft->drawString(tmp_buffer, 5, 205, 4);
 #endif

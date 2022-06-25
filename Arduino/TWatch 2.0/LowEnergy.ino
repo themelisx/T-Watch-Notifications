@@ -31,8 +31,8 @@ void low_energy() {
       #ifndef BLE_Notifications
         displayTime(true);
       #else
-        if(notif_new){
-          notif_new = false;
+        if(notification_new){
+          notification_new = false;
           viewNewNotification();
         } else {
           displayTime(true);
