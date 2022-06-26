@@ -36,7 +36,7 @@ void low_energy() {
       #else
         if (notification_new) {
           notification_new = false;
-          viewNewNotification(NULL);
+          viewNewNotification();
         } else {
           displayTime(true);
         }
