@@ -11,6 +11,8 @@
 #include <WiFi.h>
 #include <Wire.h>
 
+#include <ArduinoJson.h>
+
 #include <string.h>
 #include <string>
 #include <cstdarg>
@@ -19,7 +21,7 @@
 #include "config.h"
 #include <soc/rtc.h>
 
-#define DEBUG false  //set to true for debug output, false for no debug output
+#define DEBUG true  //set to true for debug output, false for no debug output
 #define DEBUG_SERIAL if(DEBUG)Serial
 
 #define vibrationPin 4

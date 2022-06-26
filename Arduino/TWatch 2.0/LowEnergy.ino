@@ -28,16 +28,20 @@ void low_energy() {
       DEBUG_SERIAL.println(lastTouch);
       DEBUG_SERIAL.println("wakeup");
 
+      displayTime(true);
+
+      /*
       #ifndef BLE_Notifications
         displayTime(true);
       #else
-        if(notification_new){
+        if (notification_new) {
           notification_new = false;
           viewNewNotification();
         } else {
           displayTime(true);
         }
       #endif
+      */
     }
   }
 }
