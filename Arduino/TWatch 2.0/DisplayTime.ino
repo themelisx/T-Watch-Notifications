@@ -25,7 +25,7 @@ void displayTime(boolean fullUpdate) {
     DEBUG_SERIAL.println(lastTouch);
     DEBUG_SERIAL.println("display time");
 
-    ////Get date of week in words
+    //Get date of week in words
     weekDay = ttgo->rtc->getDayOfWeek(dday, mmonth, yyear);
     switch (weekDay) {
       case 0:
@@ -51,7 +51,7 @@ void displayTime(boolean fullUpdate) {
         break;
     }
 
-    ////Print time
+    //Print time
     ttgo->tft->fillScreen(TFT_BLACK);  //Empty screen
     ttgo->tft->setTextColor(0xFFFF);
 
@@ -63,18 +63,18 @@ void displayTime(boolean fullUpdate) {
     ttgo->tft->drawNumber(mm, xpos + 4, ypos, 6);
 
 
-    ////Get date
+    //Get date
     char date[15];
     memset(date, 0, 15);
     sprintf(date, "%s %d/%d/%d", dayOfWeek, dday, mmonth, yyear);
 
-    ////Print date
+    //Print date
     int xPos = ttgo->tft->textWidth(date, 4);
     ttgo->tft->setTextSize(1);
     ttgo->tft->setCursor(70, 60);
     ttgo->tft->drawString(date, 120 - (xPos / 2), 50, 4);
 
-    ////Get battery
+    //Get battery
     int p = ttgo->power->getBattPercentage();
     if (p > 100) {
       p = 100;
@@ -83,17 +83,25 @@ void displayTime(boolean fullUpdate) {
     memset(percentage, 0, 5);
     sprintf(percentage, "%d%%", p);
 
-    ////Print battery
+    //Print battery
     xPos = 240 - ttgo->tft->textWidth(percentage, 4);
 
     ttgo->tft->fillRect(166, 0, 74, 30, TFT_BLACK);
     ttgo->tft->drawString(percentage, xPos, 5, 4);
 
-#ifdef BLE_NOTIFICATIONS
-    ////Draw notification widget
-    sprintf(tmp_buffer, "Notifications: %d", notification_count);
 
+
+#ifdef BLE_NOTIFICATIONS
+    //Draw notification widget
+    sprintf(tmp_buffer, "Notifications: %d", notification_count);
     ttgo->tft->drawString(tmp_buffer, 5, 205, 4);
+
+    //Draw connection status
+    if (deviceConnected) {
+      ttgo->tft->drawString("connected", 5, 5, 1);
+    } else {
+      ttgo->tft->drawString("disconnected", 5, 5, 1);
+    }
 #endif
   }
 }
