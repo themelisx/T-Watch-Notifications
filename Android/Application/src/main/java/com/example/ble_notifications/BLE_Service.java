@@ -48,15 +48,17 @@ public class BLE_Service extends Service {
     private static final int STATE_CONNECTED = 2;
 
     public final static String ACTION_GATT_CONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+            "com.example.ble_notifications.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_CONNECTING =
+            "com.example.ble_notifications.ACTION_GATT_CONNECTING";
     public final static String ACTION_GATT_DISCONNECTED =
-            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+            "com.example.ble_notifications.ACTION_GATT_DISCONNECTED";
     public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+            "com.example.ble_notifications.ACTION_GATT_SERVICES_DISCOVERED";
     public final static String ACTION_DATA_AVAILABLE =
-            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+            "com.example.ble_notifications.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_DATA =
-            "com.example.bluetooth.le.EXTRA_DATA";
+            "com.example.ble_notifications.EXTRA_DATA";
 
     public final static UUID UUID_HEART_RATE_MEASUREMENT =
             UUID.fromString(SampleGattAttributes.MY_UUID);
