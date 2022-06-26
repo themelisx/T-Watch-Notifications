@@ -141,9 +141,7 @@ public class MainService extends Service {
 
             } else if (BLE_Service.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
-
                 Log.i(TAG, getString(R.string.disconnected));
-
                 // TODO: Update UI
                 // updateConnectionState(R.string.disconnected);
             } else if (BLE_Service.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {

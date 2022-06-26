@@ -8,10 +8,12 @@ import android.app.ListActivity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -110,6 +112,13 @@ public class MainActivity extends ListActivity {
             }
         }
 
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(BLE_Service.ACTION_GATT_CONNECTED);
+        intentFilter.addAction(BLE_Service.ACTION_GATT_DISCONNECTED);
+        intentFilter.addAction(BLE_Service.ACTION_GATT_SERVICES_DISCOVERED);
+        intentFilter.addAction(BLE_Service.ACTION_DATA_AVAILABLE);
+        registerReceiver(mGattUpdateReceiver, intentFilter);
+
         mLeDeviceListAdapter = new LeDeviceListAdapter();
         setListAdapter(mLeDeviceListAdapter);
     }
@@ -127,6 +136,7 @@ public class MainActivity extends ListActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        unregisterReceiver(mGattUpdateReceiver);
         scanLeDevice(false);
         mLeDeviceListAdapter.clear();
     }
@@ -167,8 +177,9 @@ public class MainActivity extends ListActivity {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         mDeviceAddress = sharedPreferences.getString(DEVICE_ADDRESS, "00:00:00:00:00");
+        mDeviceName = sharedPreferences.getString(DEVICE_NAME, "Unknown device");
 
-        updateActionBar(getString(R.string.app_name), "");
+        updateConnectionState(R.string.disconnected);
 
         startMyService();
     }
@@ -176,14 +187,6 @@ public class MainActivity extends ListActivity {
     ///////////////////////
     // Private functions //
     ///////////////////////
-    private void updateActionBar(String title, String subtitle) {
-        if (actionBar != null) {
-            actionBar.setTitle(title);
-            actionBar.setSubtitle(subtitle);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
     private void initializeUI() {
         actionBar = getActionBar();
         btnStartService = findViewById(R.id.btn_start_service);
@@ -254,6 +257,7 @@ public class MainActivity extends ListActivity {
     private void startMyService() {
         Intent intent = new Intent(this, MainService.class);
         intent.putExtra(DEVICE_ADDRESS, mDeviceAddress);
+        intent.putExtra(DEVICE_NAME, mDeviceName);
         startService(intent);
     }
 
@@ -273,10 +277,10 @@ public class MainActivity extends ListActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ActionBar actionBar = getActionBar();
                 if (actionBar != null) {
-                    actionBar.setTitle(String.format(Locale.US, "%s - %s",
-                            getString(R.string.app_name), getString(resourceId)));
+                    actionBar.setTitle(String.format(Locale.US, "%s (%s)", mDeviceName, mDeviceAddress));
+                    actionBar.setSubtitle(getString(resourceId));
+                    actionBar.setDisplayHomeAsUpEnabled(true);
                 }
             }
         });
@@ -332,25 +336,57 @@ public class MainActivity extends ListActivity {
             }
         }
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        SharedPreferences.Editor esp = sharedPreferences.edit();
-        esp.putString(DEVICE_NAME, device.getName());
-        esp.putString(DEVICE_ADDRESS, device.getAddress());
-        esp.commit();
-
         if (mScanning) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
             mScanning = false;
         }
 
         stopMyService();
+
         mDeviceAddress = device.getAddress();
+        mDeviceName = device.getName();
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences.Editor esp = sharedPreferences.edit();
+        esp.putString(DEVICE_NAME, mDeviceName);
+        esp.putString(DEVICE_ADDRESS, mDeviceAddress);
+        esp.commit();
+
         startMyService();
     }
 
     ///////////////
     // Callbacks //
     ///////////////
+    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            final String action = intent.getAction();
+            if (BLE_Service.ACTION_GATT_CONNECTED.equals(action)) {
+                updateConnectionState(R.string.connected);
+            } else if (BLE_Service.ACTION_GATT_DISCONNECTED.equals(action)) {
+                updateConnectionState(R.string.disconnected);
+            } else if (BLE_Service.ACTION_DATA_AVAILABLE.equals(action)) {
+
+                String s = intent.getStringExtra(BLE_Service.EXTRA_DATA);
+                Log.i(TAG, "ESP says: " + s);
+
+                if (s.startsWith("ESP32=")) {
+
+                    s = s.replace("ESP32=", "");
+                    Log.d(TAG, "Command: ESP32");
+                    Log.d(TAG, "Value: " + s);
+
+                } else { //GET_NOTIFICATION_LIST
+                    Log.e(TAG, "Unknown command");
+                }
+            } /*else {
+                Log.e(TAG, "Action=" + action);
+            }*/
+        }
+    };
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
