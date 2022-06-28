@@ -14,9 +14,14 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -25,6 +30,7 @@ import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,12 +39,18 @@ public class MainService extends Service {
 
     // Constants
     private final static String TAG = MainService.class.getSimpleName();
-
+    private static final int ICON_PIXELS = 24;
+    private static final int ICON_COMPRESSION_QUALITY = 80;
     private final String LIST_NAME = "NAME";
     private final String LIST_UUID = "UUID";
 
     public static final String DEVICE_ADDRESS = "device_address";
 
+    // Commands from BT device
+    private static final String GET_PACKAGE_ICON = "GET_PKG_ICON=";
+    private static final String GET_NOTIFICATION_LIST = "GET_NOTIF_LIST=";
+
+    // Actions
     public final static String NOTIFICATION_ACTION = "com.example.NOTIFICATION_LISTENER_EXAMPLE";
     public final static String GET_NOTIFICATION_INTENT = "com.example.NOTIFICATION_LISTENER_SERVICE_EXAMPLE";
 
@@ -107,6 +119,15 @@ public class MainService extends Service {
         }
     }
 
+    private Drawable getApplicationIcon(String packageName) {
+        try {
+            PackageManager pm = getPackageManager();
+            return pm.getApplicationIcon(pm.getApplicationInfo(packageName, PackageManager.GET_META_DATA));
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+    }
+
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
 
         @Override
@@ -132,18 +153,11 @@ public class MainService extends Service {
 
             final String action = intent.getAction();
             if (BLE_Service.ACTION_GATT_CONNECTED.equals(action)) {
-
                 mConnected = true;
                 Log.i(TAG, getString(R.string.connected));
-
-                // TODO: Update UI
-                // updateConnectionState(R.string.connected);
-
             } else if (BLE_Service.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 Log.i(TAG, getString(R.string.disconnected));
-                // TODO: Update UI
-                // updateConnectionState(R.string.disconnected);
             } else if (BLE_Service.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
                 // Show all the supported services and characteristics on the user interface.
                 displayGattServices(mBLEService.getSupportedGattServices());
@@ -152,24 +166,21 @@ public class MainService extends Service {
                 String s = intent.getStringExtra(BLE_Service.EXTRA_DATA);
                 Log.i(TAG, "ESP says: " + s);
 
-                if (s.startsWith("ESP32=")) {
-
-                    s = s.replace("ESP32=", "");
-                    Log.d(TAG, "Command: ESP32");
-                    Log.d(TAG, "Value: " + s);
-
-                } else if (s.startsWith("GET_NOTIF_LIST=")) {
-
-                    s = s.replace("GET_NOTIF_LIST=", "");
+                if (s.startsWith(GET_PACKAGE_ICON)) {
+                    // Get icon of the requested package name
+                    //  (used after "new_notification" as request from the BT device)
+                    s = s.replace(GET_PACKAGE_ICON, "");
+                    sendApplicationIcon(s);
+                } else if (s.startsWith(GET_NOTIFICATION_LIST)) {
+                    // Send a broadcast to the Notification Service
+                    //  to request the active notification list
+                    s = s.replace(GET_NOTIFICATION_LIST, "");
                     Log.d(TAG, "Command: Get Notification List");
                     Log.d(TAG, "Value: " + s);
-
-                    //get the current notifications by broadcasting an intent
                     Intent i = new Intent(GET_NOTIFICATION_INTENT);
                     i.putExtra("command", "list");
                     sendBroadcast(i);
-
-                } else { //GET_NOTIFICATION_LIST
+                } else {
                     Log.e(TAG, "Unknown command");
                 }
             } /*else {
@@ -177,6 +188,41 @@ public class MainService extends Service {
             }*/
         }
     };
+
+    private void sendApplicationIcon(String packageName) {
+        Log.d(TAG, "Get package icon: " + packageName);
+        // Get Application icon
+        Drawable drawable = getApplicationIcon(packageName);
+        if (drawable != null) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            // Create a bitmap from drawable
+            Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+            // Resize to 24x24
+            bitmap = getResizedBitmap(bitmap, ICON_PIXELS, ICON_PIXELS);
+            // Compress and convert it to PNG
+            bitmap.compress(Bitmap.CompressFormat.PNG, ICON_COMPRESSION_QUALITY, byteArrayOutputStream);
+            // Get the bytes
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            // Convert it to Base64
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            // Send it via BT
+            Log.d(TAG, "Sending " + encoded.length() + " bytes...");
+            sendData(encoded);
+        } else {
+            Log.e(TAG, "Error loading application icon from package: " + packageName);
+        }
+    }
+
+    private Bitmap getResizedBitmap(Bitmap bm, int newHeight, int newWidth) {
+        // Get the original bitmap dimensions
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        Matrix matrix = new Matrix();
+        // Resize the bitmap
+        matrix.postScale(((float) newWidth) / width, ((float) newHeight) / height);
+        // Create the new bitmap
+        return Bitmap.createBitmap(bm, 0, 0, width, height, matrix, false);
+    }
 
     private void sendData(String data) {
 
