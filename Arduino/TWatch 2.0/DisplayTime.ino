@@ -89,7 +89,20 @@ void displayTime(boolean fullUpdate) {
     ttgo->tft->fillRect(166, 0, 74, 30, TFT_BLACK);
     ttgo->tft->drawString(percentage, xPos, 5, 4);
 
+    //some icons from the example
 
+    /*u8f.setFont(u8g2_font_siji_t_6x10);  // icon font
+    u8f.setFontMode(1);                  // use u8g2 transparent mode (this is default)
+    u8f.drawGlyph( 0, 230, 0x0e200);     // Power Supply
+    u8f.drawGlyph(12, 230, 0x0e201);     // Charging
+    u8f.drawGlyph(24, 230, 0x0e10a);     // Right Arrow
+    u8f.drawGlyph(36, 230, 0x0e24b);     // full Battery*/
+
+    //a test for fonts
+    /*u8f.setFont( u8g2_font_unifont_t_greek);     // greek font
+    u8f.setFontMode(1);                 // use u8g2 transparent mode (this is default)
+    u8f.setCursor(100, 230);               // start writing at this position
+    u8f.print("Δοκιμή it's a test");                 // a string in greek to test it*/
 
 #ifdef BLE_NOTIFICATIONS
     //Draw notification widget

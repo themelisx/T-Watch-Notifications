@@ -32,6 +32,8 @@
 #define DEFAULT_SCREEN_TIMEOUT 5000
 
 TTGOClass *ttgo;
+TFT_eSPI *tft;             // tft instance
+U8G2_FOR_ADAFRUIT_GFX u8f; // U8g2 font instance
 
 String Screen;
 
@@ -144,7 +146,14 @@ void setup() {
   ttgo->begin();
   ttgo->tft->setTextFont(1);
   ttgo->tft->fillScreen(TFT_BLACK);
-  ttgo->tft->setTextColor(TFT_WHITE, TFT_BLACK);  // Note: the new fonts do not draw the background colour
+  ttgo->tft->setTextColor(TFT_WHITE);  // Note: the new fonts do not draw the background colour
+  
+  // Turn on the backlight
+  ttgo->openBL();
+  tft = ttgo->tft;
+  u8f.begin(*tft);
+  u8f.setForegroundColor(TFT_WHITE);
+
   //Initialize lvgl
   ttgo->lvgl_begin();
 
@@ -176,6 +185,8 @@ void setup() {
   dday = tnow.day;
   mmonth = tnow.month;
   yyear = tnow.year;
+
+  displayTime(true);
 
   #ifdef BLE_NOTIFICATIONS
   DEBUG_SERIAL.println("Notifications enabled");

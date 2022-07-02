@@ -103,16 +103,19 @@ void viewNewNotification() {
   DEBUG_SERIAL.println(title);
   DEBUG_SERIAL.println(subText);
 
-  ttgo->tft->setTextSize(2);
+  u8f.setForegroundColor(TFT_WHITE);  // apply color
   ttgo->tft->fillScreen(TFT_BLACK);
-  ttgo->tft->setCursor(5, 5);
-  ttgo->tft->print("AppName: ");
-  ttgo->tft->println(appName);
-  ttgo->tft->print("Text: ");
-  ttgo->tft->println(text);
-  ttgo->tft->print("Title: ");
-  ttgo->tft->println(title);
-  ttgo->tft->print("SubText: ");
-  ttgo->tft->println(subText);
+  
+  u8f.setFont( u8g2_font_unifont_t_greek);//greek font (standard size)
+  //u8f.setTextSize(2);
+  u8f.setCursor(5, 5);
+  u8f.print("AppName: ");
+  u8f.println(appName);
+  u8f.print("Text: ");
+  u8f.println(text);
+  u8f.print("Title: ");
+  u8f.println(title);
+  u8f.print("SubText: ");
+  u8f.println(subText);
 }
 #endif
