@@ -236,8 +236,6 @@ public class MainService extends Service {
                 Log.e(TAG, "mWriteCharacteristic is null");
                 doDisconnect(null);
             }
-        } else {
-            Toast.makeText(this, getString(R.string.device_not_connected), Toast.LENGTH_SHORT).show();
         }
     }
 
