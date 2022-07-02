@@ -150,17 +150,19 @@ void setup() {
   
   // Turn on the backlight
   ttgo->openBL();
+
+  // Initialize necessary things for printing Unicode characters
   tft = ttgo->tft;
   u8f.begin(*tft);
   u8f.setForegroundColor(TFT_WHITE);
 
-  //Initialize lvgl
+  // Initialize lvgl
   ttgo->lvgl_begin();
 
-  //Check if the RTC clock matches, if not, use compile time
+  // Check if the RTC clock matches, if not, use compile time
   ttgo->rtc->check();
 
-  //Synchronize time to system time
+  // Synchronize time to system time
   ttgo->rtc->syncToSystem();
 
   DEBUG_SERIAL.begin(115200);
