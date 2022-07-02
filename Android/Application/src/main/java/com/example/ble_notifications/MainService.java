@@ -207,7 +207,7 @@ public class MainService extends Service {
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
             // Send it via BT
             Log.d(TAG, "Sending " + encoded.length() + " bytes...");
-            sendData("ICON=" + encoded);
+            sendData("ICON=" + packageName + ";" + encoded);
         } else {
             Log.e(TAG, "Error loading application icon from package: " + packageName);
         }
