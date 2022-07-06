@@ -89,8 +89,6 @@ void displayTime(boolean fullUpdate) {
     ttgo->tft->fillRect(166, 0, 74, 30, TFT_BLACK);
     ttgo->tft->drawString(percentage, xPos, 5, 4);
 
-
-
 #ifdef BLE_NOTIFICATIONS
     //Draw notification widget
     sprintf(tmp_buffer, "Notifications: %d", notification_count);

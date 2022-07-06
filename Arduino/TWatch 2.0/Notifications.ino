@@ -142,12 +142,13 @@ void viewNewNotification() {
   DEBUG_SERIAL.println(title);
   DEBUG_SERIAL.println(subText);
 
-  ttgo->tft->setTextSize(2);
+  u8f.setForegroundColor(TFT_WHITE);  // apply color
   ttgo->tft->fillScreen(TFT_BLACK);
 
   u8f.setFont(u8g2_font_unifont_t_greek);  //greek font (standard size)
   //u8f.setTextSize(2);
   u8f.setCursor(5, 40);
+
   u8f.print("AppName: ");
   u8f.println(appName);
   u8f.print("Text: ");
