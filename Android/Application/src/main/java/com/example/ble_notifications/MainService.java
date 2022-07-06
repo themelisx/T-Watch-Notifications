@@ -200,7 +200,7 @@ public class MainService extends Service {
             // Resize to 24x24
             bitmap = getResizedBitmap(bitmap, ICON_PIXELS, ICON_PIXELS);
             // Compress and convert it to PNG
-            bitmap.compress(Bitmap.CompressFormat.PNG, ICON_COMPRESSION_QUALITY, byteArrayOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, ICON_COMPRESSION_QUALITY, byteArrayOutputStream);
             // Get the bytes
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             // Convert it to Base64
