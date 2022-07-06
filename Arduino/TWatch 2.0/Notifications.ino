@@ -1,6 +1,20 @@
 #ifdef BLE_NOTIFICATIONS
 ///////////////////////////////////////////////////////////////////// BLUETOOTH
 
+void PNGDraw(PNGDRAW *pDraw)
+{
+PRIVATE *pPriv = (PRIVATE *)pDraw->pUser;
+uint16_t usPixels[240];
+
+  if (pPriv->bConvert)
+     png.getLineAsRGB565(pDraw, usPixels, PNG_RGB565_LITTLE_ENDIAN, 0xffffffff); // don't do alpha color blending
+} /* PNGDraw() */
+
+void requestIcon(String PKGNAME) {
+  sprintf(tmp_buffer, "GET_PKG_ICON=%s", PKGNAME);
+  pCharacteristic->setValue(tmp_buffer);
+  pCharacteristic->notify();
+}
 
 void getNotificationList() {
   DEBUG_SERIAL.println("Requesting notification list...");
@@ -20,16 +34,38 @@ void parseCommand(String value) {
   if (value.startsWith("ECHO=")) {
     value.replace("ECHO=", "");
     DEBUG_SERIAL.println(value);
+
   } else if (value.startsWith("NOTIFICATION_LIST")) {
     value.replace("NOTIFICATION_LIST=", "");
     createNotificationList(value);
+
   } else if (value.startsWith("NEW_NOTIFICATION=")) {
     value.replace("NEW_NOTIFICATION=", "");
     alertNewNotification(value);
     //NEW_NOTIFICATION={"appName":"Messages","category":"msg","id":0,"pName":"com.google.android.apps.messaging","text":"MHNYMA AΠO KINHTO","title":"Μωρό μου"}
     //NEW_NOTIFICATION={"appName":"Gmail","category":"email","id":0,"pName":"com.google.android.gm","subText":"themelisx@gmail.com","text":"Hello","title":"Παναγιώτης Θ"}
+
   } else if (value.startsWith("GET_LIST")) {
     getNotificationList();
+
+  } else if (value.startsWith("ICON=")) {
+    value.replace("ICON=", "");
+    
+    int inputStringLength = value.length(); //Get length of input
+    char *inputString = (char*)malloc(inputStringLength+1);
+    value.getBytes((unsigned char*)inputString, inputStringLength);
+
+    int decodedLength = BASE64::decodeLength(inputString);
+    uint8_t base64Result[inputStringLength];
+    
+    BASE64::decode(inputString, base64Result);
+
+    int rc;
+    PRIVATE priv;
+
+    rc = png.decode((void *)&priv, PNG_FAST_PALETTE);
+    free(inputString);
+
   } else {
     DEBUG_SERIAL.print("Unknown command: ");
     DEBUG_SERIAL.println(value);
@@ -82,11 +118,14 @@ void viewNewNotification() {
   //NEW_NOTIFICATION={"appName":"Messages","category":"msg","id":0,"pName":"com.google.android.apps.messaging","text":"MHNYMA AΠO KINHTO","title":"Μωρό μου"}
 
   String appName = String((const char *)myObject["appName"]);
-  String category = String((const char *)myObject["category"]); 
+  String category = String((const char *)myObject["category"]);
   int id = (int)myObject["id"];
   String text;
   String title;
   String subText = "";
+  String pName = String((const char *)myObject["pName"]); //package name
+
+  requestIcon(pName);
 
   if (category.equals("msg")) {
     text = String((const char *)myObject["text"]);
@@ -105,14 +144,18 @@ void viewNewNotification() {
 
   ttgo->tft->setTextSize(2);
   ttgo->tft->fillScreen(TFT_BLACK);
-  ttgo->tft->setCursor(5, 5);
-  ttgo->tft->print("AppName: ");
-  ttgo->tft->println(appName);
-  ttgo->tft->print("Text: ");
-  ttgo->tft->println(text);
-  ttgo->tft->print("Title: ");
-  ttgo->tft->println(title);
-  ttgo->tft->print("SubText: ");
-  ttgo->tft->println(subText);
+
+  u8f.setFont(u8g2_font_unifont_t_greek);  //greek font (standard size)
+  //u8f.setTextSize(2);
+  u8f.setCursor(5, 40);
+  u8f.print("AppName: ");
+  u8f.println(appName);
+  u8f.print("Text: ");
+  u8f.println(text);
+  u8f.print("Title: ");
+  u8f.println(title);
+  u8f.print("SubText: ");
+  u8f.println(subText);
+
 }
 #endif

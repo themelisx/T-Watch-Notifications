@@ -13,6 +13,9 @@
 
 #include <ArduinoJson.h>
 
+#include "base64.hpp"
+#include <PNGdec.h>
+
 #include <string.h>
 #include <string>
 #include <cstdarg>
@@ -32,6 +35,18 @@
 #define DEFAULT_SCREEN_TIMEOUT 5000
 
 TTGOClass *ttgo;
+
+// PNG stuff //
+PNG png; // statically allocate the PNG structure (about 50K of RAM)
+
+// simple private structure to pass a boolean value to the PNGDRAW callback
+typedef struct myprivate
+{
+  bool bConvert;
+} PRIVATE;
+
+
+///////////////
 
 String Screen;
 
