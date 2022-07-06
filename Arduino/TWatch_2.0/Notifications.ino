@@ -56,7 +56,7 @@ void parseCommand(String value) {
     value.getBytes((unsigned char*)inputString, inputStringLength);
 
     int decodedLength = BASE64::decodeLength(inputString);
-    uint8_t base64Result[inputStringLength];
+    uint8_t *base64Result = (uint8_t *)malloc(inputStringLength);
     
     BASE64::decode(inputString, base64Result);
 
@@ -64,6 +64,7 @@ void parseCommand(String value) {
     PRIVATE priv;
 
     rc = png.decode((void *)&priv, PNG_FAST_PALETTE);
+    free(base64Result);
     free(inputString);
 
   } else {

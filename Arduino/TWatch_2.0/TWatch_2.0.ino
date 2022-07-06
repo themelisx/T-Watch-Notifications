@@ -7,8 +7,8 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <EEPROM.h>
-#include <WiFi.h>
+//#include <EEPROM.h>
+//#include <WiFi.h>
 #include <Wire.h>
 
 #include <ArduinoJson.h>
