@@ -1,0 +1,86 @@
+object frmHomeScreen: TfrmHomeScreen
+  Left = 602
+  Height = 240
+  Top = 170
+  Width = 240
+  Caption = 'Home'
+  ClientHeight = 240
+  ClientWidth = 240
+  LCLVersion = '2.2.2.0'
+  object Label1: TPanel
+    Left = 49
+    Height = 30
+    Top = 56
+    Width = 153
+    BevelOuter = bvNone
+    Caption = 'Mon 27/10/2022'
+    Font.CharSet = GREEK_CHARSET
+    Font.Height = -21
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentColor = False
+    ParentFont = False
+    TabOrder = 2
+  end
+  object Widget: TPanel
+    Left = 5
+    Height = 50
+    Top = 177
+    Width = 230
+    TabOrder = 0
+  end
+  object Panel1: TPanel
+    Left = 40
+    Height = 56
+    Top = 88
+    Width = 170
+    BevelOuter = bvNone
+    Caption = '00:00'
+    Font.CharSet = GREEK_CHARSET
+    Font.Height = -64
+    Font.Pitch = fpVariable
+    Font.Quality = fqDraft
+    ParentFont = False
+    TabOrder = 1
+  end
+  object Status_Bar: TPanel
+    Left = 0
+    Height = 30
+    Top = 0
+    Width = 240
+    ClientHeight = 30
+    ClientWidth = 240
+    TabOrder = 3
+    object BatteryPercentage: TPanel
+      Left = 189
+      Height = 28
+      Top = 1
+      Width = 50
+      BevelOuter = bvNone
+      Caption = '100%'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -21
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+    end
+    object StatusIcons: TPanel
+      Left = 1
+      Height = 28
+      Top = 1
+      Width = 183
+      Alignment = taRightJustify
+      BevelOuter = bvNone
+      Caption = 'XXXX'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -21
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 1
+    end
+  end
+end

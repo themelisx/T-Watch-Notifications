@@ -1,0 +1,189 @@
+object frmNotificationView: TfrmNotificationView
+  Left = 1089
+  Height = 240
+  Top = 169
+  Width = 240
+  Caption = 'Notification View'
+  ClientHeight = 240
+  ClientWidth = 240
+  OnCreate = FormCreate
+  LCLVersion = '2.2.2.0'
+  object Bottom_Bar: TPanel
+    Left = 5
+    Height = 24
+    Top = 213
+    Width = 230
+    BevelOuter = bvNone
+    ClientHeight = 24
+    ClientWidth = 230
+    TabOrder = 0
+    object NotificationAdditionalInfo: TPanel
+      Left = 0
+      Height = 21
+      Top = 1
+      Width = 79
+      BevelOuter = bvNone
+      Caption = '[additional]'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -16
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+      Wordwrap = True
+    end
+    object NotificationTime: TPanel
+      Left = 192
+      Height = 21
+      Top = -1
+      Width = 39
+      BevelOuter = bvNone
+      Caption = '13:52'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -16
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 1
+    end
+  end
+  object NotificationBar: TPanel
+    Left = 5
+    Height = 24
+    Top = 32
+    Width = 230
+    BevelOuter = bvNone
+    ClientHeight = 24
+    ClientWidth = 230
+    TabOrder = 1
+    object NotificationAppIcon: TImage
+      Left = 0
+      Height = 24
+      Top = 0
+      Width = 24
+      Picture.Data = {
+        1754506F727461626C654E6574776F726B47726170686963E302000089504E47
+        0D0A1A0A0000000D49484452000000300000003008060000005702F987000000
+        06624B474400FF00FF00FFA0BDA79300000298494441546881ED99BF4F136118
+        C73FEF517090A803C5C544C489C840421C1C0CEAA233093838998821C4CDA19B
+        31BAF00FA00B899B89656373E147183426466220B800E2442F4DACB44868EFEE
+        710023B477A5EFCBF5C79BF819DFEBF3DEF793BBE7EDD3547148CF5461C05192
+        12E1368A8B34866D51CC2B51939B139D5F4D365000BDAF0B0F44E40DD01E6BBC
+        DA292AD4C38D89CEB7BA85AA67AA30A0947CA279E1FF5204755DF749388E9214
+        CD0F0FD021484AB7C811B8538F342628832C092059BE38DA97A0BFAB2D965051
+        AC647DD26B5EF9B2F6E191E0B0918FD2DFD5C6ADCBF515004853215091E5249C
+        78A2348F44D8E2B3A57D586A741433AC7F02FF059A4D680FBCB879A6EEA7D0C2
+        967FD06BA72454A09924C716D2D157554621736ECE9D6566D487088195AC5F9F
+        74B5DD6324BA4A107892BCD0BDEC3C5A1CCE4C0F6DAA2BAFF2528F80A614BE7C
+        AEF5A3EB9E2A0DDADCC457DB83F6A7360B208A91D01EB8D6D546F759BDCDDC5D
+        586D40EF1C45416FA8C0FDBE84F6317A702C365640A0C3EA5708228ED1776B1E
+        F33F2A46DDAAB8BBA70F2381FE81182AB09AF559CD9E3A8F3652D4FF666EA957
+        C8CBFDD4AE691981607F9F52665BBBAE2566A160EF377B1BEB481068D79E24B0
+        03BC2F5FF4F3F91BE27B97B4EF5686944A78F93CFEAF9CF11ED5047684E0EEF7
+        89F31FCB2F1C4E8C5586AEC611D50391E15B8D30016BC243A58055E1E1B88075
+        E1E19F8095E1E140C0DAF00089C0917B5BE3DAE15BE667A8B3357EEE837E9972
+        E38F6286D12CA490B9B883986224E0E6DC596039E62C46984DA333A3BE236A18
+        588F378E3EC6E374667A68D353A54125BC04BE2928C698AB66B4FF116934C9B1
+        C514C864D4F5961780EA12560840B4843502102E619500544A582700C725AC14
+        80934F272BE87E3CFFFC0F557DEFAF3D4A72790000000049454E44AE426082
+      }
+      Stretch = True
+    end
+    object NotificationAppName: TPanel
+      Left = 27
+      Height = 21
+      Top = 0
+      Width = 68
+      BevelOuter = bvNone
+      Caption = 'Messages'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -16
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+      OnClick = NotificationAppNameClick
+    end
+    object NotificationActionDelete: TImage
+      Left = 206
+      Height = 24
+      Top = 0
+      Width = 24
+      Align = alRight
+      OnClick = NotificationActionDeleteClick
+    end
+  end
+  object StatusBar: TPanel
+    Left = 0
+    Height = 30
+    Top = 0
+    Width = 240
+    ClientHeight = 30
+    ClientWidth = 240
+    TabOrder = 2
+    object BatteryPercentage: TPanel
+      Left = 189
+      Height = 28
+      Top = 1
+      Width = 50
+      Align = alRight
+      BevelOuter = bvNone
+      Caption = '100%'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -21
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 0
+    end
+    object StatusIcons: TPanel
+      Left = 61
+      Height = 28
+      Top = 1
+      Width = 123
+      Align = alClient
+      Alignment = taRightJustify
+      BorderSpacing.Right = 5
+      BevelOuter = bvNone
+      Caption = 'XXXX'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -21
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 1
+    end
+    object Clock: TPanel
+      Left = 6
+      Height = 28
+      Top = 1
+      Width = 55
+      Align = alLeft
+      Alignment = taLeftJustify
+      BorderSpacing.Left = 5
+      BevelOuter = bvNone
+      Caption = '00:00'
+      Font.CharSet = GREEK_CHARSET
+      Font.Height = -21
+      Font.Pitch = fpVariable
+      Font.Quality = fqDraft
+      ParentFont = False
+      TabOrder = 2
+    end
+  end
+  object NotificationText: TMemo
+    Left = 5
+    Height = 151
+    Top = 60
+    Width = 230
+    Lines.Strings = (
+      'This is an incoming message from Android application (Messages)'
+    )
+    TabOrder = 3
+  end
+end
