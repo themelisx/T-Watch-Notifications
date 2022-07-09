@@ -7,6 +7,8 @@ Android/.gradle/
 Android/.google
 
 UI/backup
+Parser/backup
+Parser/lib
 
 # Local configuration file (sdk path, etc)
 local.properties
