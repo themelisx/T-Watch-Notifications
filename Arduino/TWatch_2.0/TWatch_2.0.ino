@@ -14,7 +14,7 @@
 #include <ArduinoJson.h>
 
 #include "base64.hpp"
-#include <PNGdec.h>
+#include <JPEGDecoder.h>  // JPEG decoder library
 
 #include <string.h>
 #include <string>
@@ -37,18 +37,6 @@
 TTGOClass *ttgo;
 TFT_eSPI *tft;             // tft instance
 U8G2_FOR_ADAFRUIT_GFX u8f; // U8g2 font instance
-
-// PNG stuff //
-PNG png; // statically allocate the PNG structure (about 50K of RAM)
-
-// simple private structure to pass a boolean value to the PNGDRAW callback
-typedef struct myprivate
-{
-  bool bConvert;
-} PRIVATE;
-
-
-///////////////
 
 String Screen;
 

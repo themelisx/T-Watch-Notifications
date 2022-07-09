@@ -1,15 +1,6 @@
 #ifdef BLE_NOTIFICATIONS
 ///////////////////////////////////////////////////////////////////// BLUETOOTH
 
-void PNGDraw(PNGDRAW *pDraw)
-{
-PRIVATE *pPriv = (PRIVATE *)pDraw->pUser;
-uint16_t usPixels[240];
-
-  if (pPriv->bConvert)
-     png.getLineAsRGB565(pDraw, usPixels, PNG_RGB565_LITTLE_ENDIAN, 0xffffffff); // don't do alpha color blending
-} /* PNGDraw() */
-
 void requestIcon(String PKGNAME) {
   sprintf(tmp_buffer, "GET_PKG_ICON=%s", PKGNAME);
   pCharacteristic->setValue(tmp_buffer);
@@ -50,20 +41,18 @@ void parseCommand(String value) {
 
   } else if (value.startsWith("ICON=")) {
     value.replace("ICON=", "");
-    
-    int inputStringLength = value.length(); //Get length of input
-    char *inputString = (char*)malloc(inputStringLength+1);
-    value.getBytes((unsigned char*)inputString, inputStringLength);
+
+    int inputStringLength = value.length();  //Get length of input
+    char *inputString = (char *)malloc(inputStringLength + 1);
+    value.getBytes((unsigned char *)inputString, inputStringLength);
 
     int decodedLength = BASE64::decodeLength(inputString);
     uint8_t *base64Result = (uint8_t *)malloc(inputStringLength);
-    
+
     BASE64::decode(inputString, base64Result);
 
-    int rc;
-    PRIVATE priv;
+    drawArrayJpeg(base64Result, sizeof(base64Result), 0, 0);  //last two are coordinates to draw image
 
-    rc = png.decode((void *)&priv, PNG_FAST_PALETTE);
     free(base64Result);
     free(inputString);
 
@@ -124,7 +113,7 @@ void viewNewNotification() {
   String text;
   String title;
   String subText = "";
-  String pName = String((const char *)myObject["pName"]); //package name
+  String pName = String((const char *)myObject["pName"]);  //package name
 
   requestIcon(pName);
 
@@ -158,6 +147,100 @@ void viewNewNotification() {
   u8f.println(title);
   u8f.print("SubText: ");
   u8f.println(subText);
+}
 
+
+//####################################################################################################
+// Draw a JPEG on the TFT pulled from a program memory array
+//####################################################################################################
+void drawArrayJpeg(const uint8_t arrayname[], uint32_t array_size, int x, int y) {
+
+  JpegDec.decodeArray(arrayname, array_size);
+
+  jpegInfo();  // Print information from the JPEG file (could comment this line out)
+
+  renderJPEG(x, y);
+
+  Serial.println("#########################");
+}
+
+//####################################################################################################
+// Draw a JPEG on the TFT, images will be cropped on the right/bottom sides if they do not fit
+//####################################################################################################
+// This function assumes xpos,ypos is a valid screen coordinate. For convenience images that do not
+// fit totally on the screen are cropped to the nearest MCU size and may leave right/bottom borders.
+/*void renderJPEG(int xpos, int ypos) {
+
+  // retrieve infomration about the image
+  uint16_t *pImg;
+  uint16_t mcu_w = JpegDec.MCUWidth;
+  uint16_t mcu_h = JpegDec.MCUHeight;
+  uint32_t max_x = JpegDec.width;
+  uint32_t max_y = JpegDec.height;
+
+  // Jpeg images are draw as a set of image block (tiles) called Minimum Coding Units (MCUs)
+  // Typically these MCUs are 16x16 pixel blocks
+  // Determine the width and height of the right and bottom edge image blocks
+  uint32_t min_w = min(mcu_w, max_x % mcu_w);
+  uint32_t min_h = min(mcu_h, max_y % mcu_h);
+
+  // save the current image block size
+  uint32_t win_w = mcu_w;
+  uint32_t win_h = mcu_h;
+
+  // read each MCU block until there are no more
+  while (JpegDec.read()) {  // While there is more data in the file
+    // save a pointer to the image block
+    pImg = JpegDec.pImage;
+    // calculate where the image block should be drawn on the screen
+    int mcu_x = JpegDec.MCUx * mcu_w + xpos;  // Calculate coordinates of top left corner of current MCU
+    int mcu_y = JpegDec.MCUy * mcu_h + ypos;
+    // check if the image block size needs to be changed for the right and bottom edges
+    if (mcu_x + mcu_w <= max_x) win_w = mcu_w;
+    else
+      win_w = min_w;
+    if (mcu_y + mcu_h <= max_y) win_h = mcu_h;
+    else
+      win_h = min_h;
+
+    // calculate how many pixels must be drawn
+    uint32_t mcu_pixels = win_w * win_h;
+
+    // Write all MCU pixels to the TFT window
+    while (mcu_pixels--) {
+      // Push each pixel to the TFT MCU area
+      uint8_t col_h = (*pImg) >> 8;         // High byte
+      uint8_t col_l = (*pImg) & 0xFF;       // Low byte
+      pImg++;                               // Increment pointer
+      myGLCD.LCD_Write_DATA(col_h, col_l);  // Sent pixel colour to window
+    }
+  }
+}*/
+
+//====================================================================================
+//   Print information about the decoded Jpeg image
+//====================================================================================
+
+void jpegInfo() {
+  Serial.println(F("==============="));
+  Serial.println(F("JPEG image info"));
+  Serial.println(F("==============="));
+  Serial.print(F("Width      :"));
+  Serial.println(JpegDec.width);
+  Serial.print(F("Height     :"));
+  Serial.println(JpegDec.height);
+  Serial.print(F("Components :"));
+  Serial.println(JpegDec.comps);
+  Serial.print(F("MCU / row  :"));
+  Serial.println(JpegDec.MCUSPerRow);
+  Serial.print(F("MCU / col  :"));
+  Serial.println(JpegDec.MCUSPerCol);
+  Serial.print(F("Scan type  :"));
+  Serial.println(JpegDec.scanType);
+  Serial.print(F("MCU width  :"));
+  Serial.println(JpegDec.MCUWidth);
+  Serial.print(F("MCU height :"));
+  Serial.println(JpegDec.MCUHeight);
+  Serial.println(F("==============="));
 }
 #endif
