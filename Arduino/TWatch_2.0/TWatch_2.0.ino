@@ -7,11 +7,14 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
-#include <EEPROM.h>
-#include <WiFi.h>
+//#include <EEPROM.h>
+//#include <WiFi.h>
 #include <Wire.h>
 
 #include <ArduinoJson.h>
+
+#include "base64.hpp"
+#include <JPEGDecoder.h>  // JPEG decoder library
 
 #include <string.h>
 #include <string>

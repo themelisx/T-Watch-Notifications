@@ -200,14 +200,14 @@ public class MainService extends Service {
             // Resize to 24x24
             bitmap = getResizedBitmap(bitmap, ICON_PIXELS, ICON_PIXELS);
             // Compress and convert it to PNG
-            bitmap.compress(Bitmap.CompressFormat.PNG, ICON_COMPRESSION_QUALITY, byteArrayOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, ICON_COMPRESSION_QUALITY, byteArrayOutputStream);
             // Get the bytes
             byte[] byteArray = byteArrayOutputStream.toByteArray();
             // Convert it to Base64
             String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
             // Send it via BT
             Log.d(TAG, "Sending " + encoded.length() + " bytes...");
-            sendData("ICON=" + packageName + ";" + encoded);
+            sendData("ICON=" + encoded);
         } else {
             Log.e(TAG, "Error loading application icon from package: " + packageName);
         }
