@@ -52,6 +52,8 @@ type
     text: String;
     OnClick: String;
     enabled: Boolean;
+    FontHeight: Integer;
+    PictureData: String;
   end;
 
 var
@@ -124,6 +126,8 @@ begin
         myObjects[x].text := '';
         myObjects[x].OnClick := '';
         myObjects[x].enabled := true;
+        myObjects[x].FontHeight := 0;
+        myObjects[x].PictureData := '';
       end;
   for x := 0 to 9 do
       levels[x] := 0;
@@ -134,8 +138,11 @@ var txtFile: TextFile;
     line : String;
     x : Integer;
     checked, errors : Integer;
+    ignoreLines : Boolean;
+    PictureData : boolean;
 begin
   clearObjects;
+  ignoreLines := false;
 
   setStatus('Parsing: ' + fileName);
   Log('Parsing: ' + fileName);
@@ -147,69 +154,102 @@ begin
         ReadLn(txtFile, line);
         line := Trim(line);
         //Log(line);
-        if (line.Equals('Enabled = False')) then
-          begin
-            myObjects[totalObjects].enabled := false;
-            Log('Object will ignored');
-          end
-        else if (line.startsWith('object')) then
-          begin
-            Inc(totalObjects);
-            Inc(levelIndex);
-            levels[levelIndex] := totalObjects;
 
-            delete(line, 1, 7);
-            x := pos(':', line) - 1;
-            myObjects[totalObjects].name := Copy(line, 1, x);
-            delete(line, 1, x+2);
-            myObjects[totalObjects].objType := line;
-            Log('Creating new "' + myObjects[totalObjects].objType + '" object with name: "' + myObjects[totalObjects].name + '"');
-          end
-        else if (line.startsWith('end')) then
+        if line.Equals('Picture.Data = {') then
           begin
-            //Log('Object ended: ' + myObjects[levels[levelIndex]].name);
-            Dec(levelIndex);
-            //if (levelIndex > -1) then
-            //   Log('Returning to object: ' + myObjects[levels[levelIndex]].name);
-          end
-        else if (line.startsWith('Left')) then
+            PictureData := true;
+            continue;
+          end;
+        if line.equals('}') And PictureData = true then
           begin
-            if totalObjects = 0 then
-              myObjects[totalObjects].left := 0
-            else
+            PictureData := false;
+            continue;
+          end;
+        if PictureData = true then
+          begin
+            myObjects[totalObjects].PictureData :=
+              myObjects[totalObjects].PictureData + line;
+            continue;
+          end;
+
+        if (line.Equals('Lines.Strings = (')) then
+          ignoreLines := true
+        else if (ignoreLines = true) And (line.Equals(')')) then
+          begin
+            ignoreLines := false;
+            continue;
+          end;
+
+        if ignoreLines = false then
+          begin
+            if (line.Equals('Enabled = False')) then
               begin
-                myObjects[totalObjects].left := StrToInt(Copy(line, 8, length(line)-7));
-                if childAbsPos.Checked And (levelIndex > 0) then
-                  begin
-                      myObjects[totalObjects].left :=
-                         myObjects[totalObjects].left +
-                         myObjects[levels[levelIndex-1]].left;
-                  end;
-              end;
-          end
-        else if (line.startsWith('Top')) then
-          begin
-            if totalObjects = 0 then
-                myObjects[totalObjects].top := 0
-            else
+                myObjects[totalObjects].enabled := false;
+                Log('Object will ignored');
+              end
+            else if (line.startsWith('object')) then
               begin
-                myObjects[totalObjects].top := StrToInt(Copy(line, 7, length(line)-6));
-                if childAbsPos.Checked And (levelIndex > 0) then
+                Inc(totalObjects);
+                Inc(levelIndex);
+                levels[levelIndex] := totalObjects;
+
+                delete(line, 1, 7);
+                x := pos(':', line) - 1;
+                myObjects[totalObjects].name := Copy(line, 1, x);
+                delete(line, 1, x+2);
+                myObjects[totalObjects].objType := line;
+                Log('Creating new "' + myObjects[totalObjects].objType + '" object with name: "' + myObjects[totalObjects].name + '"');
+              end
+            else if (line.startsWith('end')) then
+              begin
+                //Log('Object ended: ' + myObjects[levels[levelIndex]].name);
+                Dec(levelIndex);
+                //if (levelIndex > -1) then
+                //   Log('Returning to object: ' + myObjects[levels[levelIndex]].name);
+              end
+            else if (line.startsWith('Left')) then
+              begin
+                if totalObjects = 0 then
+                  myObjects[totalObjects].left := 0
+                else
                   begin
-                      myObjects[totalObjects].top :=
-                         myObjects[totalObjects].top +
-                         myObjects[levels[levelIndex-1]].top;
+                    myObjects[totalObjects].left := StrToInt(Copy(line, 8, length(line)-7));
+                    if childAbsPos.Checked And (levelIndex > 0) then
+                      begin
+                          myObjects[totalObjects].left :=
+                             myObjects[totalObjects].left +
+                             myObjects[levels[levelIndex-1]].left;
+                      end;
                   end;
-              end;
-          end
-        else if (line.startsWith('Height')) then
-          myObjects[totalObjects].height := StrToInt(Copy(line, 10, length(line)-9))
-        else if (line.startsWith('Width')) then
-          myObjects[totalObjects].width := StrToInt(Copy(line, 9, length(line)-8))
-        else if (line.startsWith('Caption')) then
-          myObjects[totalObjects].text := Copy(line, 11, length(line)-10)
-        else if (line.startsWith('OnClick')) then
-          myObjects[totalObjects].onClick := Copy(line, 11, length(line)-10);
+              end
+            else if (line.startsWith('Top')) then
+              begin
+                if totalObjects = 0 then
+                    myObjects[totalObjects].top := 0
+                else
+                  begin
+                    myObjects[totalObjects].top := StrToInt(Copy(line, 7, length(line)-6));
+                    if childAbsPos.Checked And (levelIndex > 0) then
+                      begin
+                          myObjects[totalObjects].top :=
+                             myObjects[totalObjects].top +
+                             myObjects[levels[levelIndex-1]].top;
+                      end;
+                  end;
+              end
+            else if (line.startsWith('Height')) then
+              myObjects[totalObjects].height := StrToInt(Copy(line, 10, length(line)-9))
+            else if (line.startsWith('Width')) then
+              myObjects[totalObjects].width := StrToInt(Copy(line, 9, length(line)-8))
+            else if (line.startsWith('Caption')) then
+              myObjects[totalObjects].text := Copy(line, 11, length(line)-10)
+            else if (line.startsWith('OnClick')) then
+              myObjects[totalObjects].onClick := Copy(line, 11, length(line)-10)
+            else if (line.startsWith('Font.Height')) then
+              myObjects[totalObjects].FontHeight := StrToInt(Copy(line, 15, length(line)-14))
+
+            //BorderSpacing.Right
+          end;
       end;
   finally
     CloseFile(txtFile);
@@ -257,6 +297,9 @@ begin
                 Log('Property "Width" is missing');
                 Inc(errors);
               end;
+            if length(myObjects[x].PictureData) > 0 then
+              //Log(myObjects[x].PictureData);
+              Log('Object contains ' + IntToStr(length(myObjects[x].PictureData)) + ' bytes of "PictureData"');
           end;
       end;
   Log('Total objectets checked: ' + IntToStr(checked));

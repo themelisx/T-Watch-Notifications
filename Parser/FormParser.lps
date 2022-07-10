@@ -9,7 +9,7 @@
         <Filename Value="FormParser.lpr"/>
         <IsPartOfProject Value="True"/>
         <CursorPos X="17" Y="13"/>
-        <UsageCount Value="37"/>
+        <UsageCount Value="41"/>
         <Loaded Value="True"/>
       </Unit>
       <Unit>
@@ -21,9 +21,9 @@
         <UnitName Value="frmMain"/>
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="253"/>
-        <CursorPos X="15" Y="265"/>
-        <UsageCount Value="37"/>
+        <TopLine Value="287"/>
+        <CursorPos X="17" Y="302"/>
+        <UsageCount Value="41"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
       </Unit>
@@ -72,15 +72,7 @@
         <DefaultSyntaxHighlighter Value="LFM"/>
       </Unit>
     </Units>
-    <JumpHistory HistoryIndex="27">
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="108" Column="36" TopLine="75"/>
-      </Position>
-      <Position>
-        <Filename Value="frmmain.pas"/>
-        <Caret Line="194" TopLine="189"/>
-      </Position>
+    <JumpHistory HistoryIndex="29">
       <Position>
         <Filename Value="frmmain.pas"/>
         <Caret Line="37" Column="24" TopLine="24"/>
@@ -183,7 +175,23 @@
       </Position>
       <Position>
         <Filename Value="frmmain.pas"/>
-        <Caret Line="54" Column="22" TopLine="163"/>
+        <Caret Line="229" Column="15" TopLine="131"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="171" Column="15" TopLine="145"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="160" Column="15" TopLine="148"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="56" Column="25" TopLine="152"/>
+      </Position>
+      <Position>
+        <Filename Value="frmmain.pas"/>
+        <Caret Line="301" Column="98" TopLine="282"/>
       </Position>
     </JumpHistory>
     <RunParams>
