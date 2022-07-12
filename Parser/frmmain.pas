@@ -54,15 +54,24 @@ type
     enabled: Boolean;
     FontHeight: Integer;
     PictureData: String;
+    //TODO: Text Color
+    //      Background color
+  end;
+
+  S_Screen = record
+    count: Integer;
+    myObjects: Array [0..50] of S_myObject;
   end;
 
 var
   frmMainMenu: TfrmMainMenu;
   directories, files, ignored: Integer;
-  myObjects: Array [0..50] of S_myObject;
+  myScreens: Array [0..50] of S_Screen;
   levels: Array[0..10] of Integer;
   levelIndex: Integer;
-  totalObjects: Integer;
+  screenIndex: Integer;
+  maxObjectsInScreen : Integer;
+  checked, errors : Integer;
 
 implementation
 
@@ -111,38 +120,44 @@ end;
 
 procedure TfrmMainMenu.clearObjects;
 var
-  x : Integer;
+  i, x : Integer;
 begin
-  totalObjects := -1;
-  levelIndex := -1;
-  for x := 0 to 49 do
-      begin
-        myObjects[x].name := '';
-        myObjects[x].objType := '';
-        myObjects[x].left := -1;
-        myObjects[x].top := -1;
-        myObjects[x].height := -1;
-        myObjects[x].width := -1;
-        myObjects[x].text := '';
-        myObjects[x].OnClick := '';
-        myObjects[x].enabled := true;
-        myObjects[x].FontHeight := 0;
-        myObjects[x].PictureData := '';
-      end;
-  for x := 0 to 9 do
-      levels[x] := 0;
+  screenIndex := 0;
+  maxObjectsInScreen := 0;
+
+  for i := 0 to 49 do
+    for x := 0 to 49 do
+        begin
+          myScreens[i].myObjects[x].name := '';
+          myScreens[i].myObjects[x].objType := '';
+          myScreens[i].myObjects[x].left := -1;
+          myScreens[i].myObjects[x].top := -1;
+          myScreens[i].myObjects[x].height := -1;
+          myScreens[i].myObjects[x].width := -1;
+          myScreens[i].myObjects[x].text := '';
+          myScreens[i].myObjects[x].OnClick := '';
+          myScreens[i].myObjects[x].enabled := true;
+          myScreens[i].myObjects[x].FontHeight := 0;
+          myScreens[i].myObjects[x].PictureData := '';
+        end;
 end;
 
 procedure TfrmMainMenu.parseFile(fileName: String);
 var txtFile: TextFile;
     line : String;
     x : Integer;
-    checked, errors : Integer;
     ignoreLines : Boolean;
     PictureData : boolean;
+    totalObjects: Integer;
 begin
-  clearObjects;
   ignoreLines := false;
+  PictureData := false;
+
+  totalObjects := -1;
+  levelIndex := 0;
+
+  for x := 0 to 9 do
+      levels[x] := 0;
 
   setStatus('Parsing: ' + fileName);
   Log('Parsing: ' + fileName);
@@ -167,8 +182,8 @@ begin
           end;
         if PictureData = true then
           begin
-            myObjects[totalObjects].PictureData :=
-              myObjects[totalObjects].PictureData + line;
+            myScreens[screenIndex].myObjects[totalObjects].PictureData :=
+              myScreens[screenIndex].myObjects[totalObjects].PictureData + line;
             continue;
           end;
 
@@ -184,7 +199,7 @@ begin
           begin
             if (line.Equals('Enabled = False')) then
               begin
-                myObjects[totalObjects].enabled := false;
+                myScreens[screenIndex].myObjects[totalObjects].enabled := false;
                 Log('Object will ignored');
               end
             else if (line.startsWith('object')) then
@@ -195,10 +210,13 @@ begin
 
                 delete(line, 1, 7);
                 x := pos(':', line) - 1;
-                myObjects[totalObjects].name := Copy(line, 1, x);
+                myScreens[screenIndex].myObjects[totalObjects].name := Copy(line, 1, x);
                 delete(line, 1, x+2);
-                myObjects[totalObjects].objType := line;
-                Log('Creating new "' + myObjects[totalObjects].objType + '" object with name: "' + myObjects[totalObjects].name + '"');
+                myScreens[screenIndex].myObjects[totalObjects].objType := line;
+                Log('Creating new "' +
+                              myScreens[screenIndex].myObjects[totalObjects].objType +
+                              '" object with name: "' +
+                              myScreens[screenIndex].myObjects[totalObjects].name + '"');
               end
             else if (line.startsWith('end')) then
               begin
@@ -210,43 +228,51 @@ begin
             else if (line.startsWith('Left')) then
               begin
                 if totalObjects = 0 then
-                  myObjects[totalObjects].left := 0
+                  myScreens[screenIndex].myObjects[totalObjects].left := 0
                 else
                   begin
-                    myObjects[totalObjects].left := StrToInt(Copy(line, 8, length(line)-7));
+                    myScreens[screenIndex].myObjects[totalObjects].left := StrToInt(Copy(line, 8, length(line)-7));
+                    if myScreens[screenIndex].myObjects[totalObjects].left < 0 then
+                      Log('[Warning] ' + myScreens[screenIndex].myObjects[totalObjects].name +
+                                     ' has "Left" value: ' +
+                                     IntToStr(myScreens[screenIndex].myObjects[totalObjects].left));
                     if childAbsPos.Checked And (levelIndex > 0) then
                       begin
-                          myObjects[totalObjects].left :=
-                             myObjects[totalObjects].left +
-                             myObjects[levels[levelIndex-1]].left;
+                          myScreens[screenIndex].myObjects[totalObjects].left :=
+                             myScreens[screenIndex].myObjects[totalObjects].left +
+                             myScreens[screenIndex].myObjects[levels[levelIndex-1]].left;
                       end;
                   end;
               end
             else if (line.startsWith('Top')) then
               begin
                 if totalObjects = 0 then
-                    myObjects[totalObjects].top := 0
+                    myScreens[screenIndex].myObjects[totalObjects].top := 0
                 else
                   begin
-                    myObjects[totalObjects].top := StrToInt(Copy(line, 7, length(line)-6));
+                    myScreens[screenIndex].myObjects[totalObjects].top := StrToInt(Copy(line, 7, length(line)-6));
+                    if myScreens[screenIndex].myObjects[totalObjects].top < 0 then
+                      Log('[Warning] ' + myScreens[screenIndex].myObjects[totalObjects].name +
+                                     ' has "Top" value: ' +
+                                     IntToStr(myScreens[screenIndex].myObjects[totalObjects].top));
                     if childAbsPos.Checked And (levelIndex > 0) then
                       begin
-                          myObjects[totalObjects].top :=
-                             myObjects[totalObjects].top +
-                             myObjects[levels[levelIndex-1]].top;
+                          myScreens[screenIndex].myObjects[totalObjects].top :=
+                             myScreens[screenIndex].myObjects[totalObjects].top +
+                             myScreens[screenIndex].myObjects[levels[levelIndex-1]].top;
                       end;
                   end;
               end
             else if (line.startsWith('Height')) then
-              myObjects[totalObjects].height := StrToInt(Copy(line, 10, length(line)-9))
+              myScreens[screenIndex].myObjects[totalObjects].height := StrToInt(Copy(line, 10, length(line)-9))
             else if (line.startsWith('Width')) then
-              myObjects[totalObjects].width := StrToInt(Copy(line, 9, length(line)-8))
+              myScreens[screenIndex].myObjects[totalObjects].width := StrToInt(Copy(line, 9, length(line)-8))
             else if (line.startsWith('Caption')) then
-              myObjects[totalObjects].text := Copy(line, 11, length(line)-10)
+              myScreens[screenIndex].myObjects[totalObjects].text := Copy(line, 12, length(line)-12)
             else if (line.startsWith('OnClick')) then
-              myObjects[totalObjects].onClick := Copy(line, 11, length(line)-10)
+              myScreens[screenIndex].myObjects[totalObjects].onClick := Copy(line, 11, length(line)-10)
             else if (line.startsWith('Font.Height')) then
-              myObjects[totalObjects].FontHeight := StrToInt(Copy(line, 15, length(line)-14))
+              myScreens[screenIndex].myObjects[totalObjects].FontHeight := StrToInt(Copy(line, 15, length(line)-14))
 
             //BorderSpacing.Right
           end;
@@ -255,76 +281,203 @@ begin
     CloseFile(txtFile);
   end;
 
+  if TotalObjects > maxObjectsInScreen then
+    maxObjectsInScreen := TotalObjects;
+
+  myScreens[screenIndex].count := TotalObjects;
+
   Log(IntToStr(TotalObjects) + ' objects found.');
 
   Log('Checking objects...');
-  checked :=0;
-  errors := 0;
 
   for x := 0 to TotalObjects - 1 do
       begin
-        if (myObjects[x].enabled) then
+        if (myScreens[screenIndex].myObjects[x].enabled) then
           begin
             Inc(Checked);
-            Log('Checking object #' + IntToStr(x+1) + ' "' + myObjects[x].name + '"...');
-            if length(myObjects[x].name) = 0 then
+            Log('Checking object #' + IntToStr(x+1) + ' "' + myScreens[screenIndex].myObjects[x].name + '"...');
+            if length(myScreens[screenIndex].myObjects[x].name) = 0 then
               begin
                 Log('Object name is missing');
                 Inc(errors);
               end;
-            if length(myObjects[x].objType) = 0 then
+            if length(myScreens[screenIndex].myObjects[x].objType) = 0 then
               begin
                 Log('Object type is missing');
                 Inc(errors);
               end;
-            if myObjects[x].left = -1 then
+            if myScreens[screenIndex].myObjects[x].left = -1 then
               begin
                 Log('Property "Left" is missing');
                 Inc(errors);
               end;
-            if myObjects[x].top = -1 then
+            if myScreens[screenIndex].myObjects[x].top = -1 then
               begin
                 Log('Property "Top" is missing');
                 Inc(errors);
               end;
-            if myObjects[x].height = -1 then
+            if myScreens[screenIndex].myObjects[x].height = -1 then
               begin
                 Log('Property "Height" is missing');
                 Inc(errors);
               end;
-            if myObjects[x].width = -1 then
+            if myScreens[screenIndex].myObjects[x].width = -1 then
               begin
                 Log('Property "Width" is missing');
                 Inc(errors);
               end;
-            if length(myObjects[x].PictureData) > 0 then
-              //Log(myObjects[x].PictureData);
-              Log('Object contains ' + IntToStr(length(myObjects[x].PictureData)) + ' bytes of "PictureData"');
+            if length(myScreens[screenIndex].myObjects[x].PictureData) > 0 then
+              //Log(myScreens[screenIndex].myObjects[x].PictureData);
+              Log('Object contains ' + IntToStr(length(myScreens[screenIndex].myObjects[x].PictureData)) + ' bytes of "PictureData"');
           end;
       end;
   Log('Total objectets checked: ' + IntToStr(checked));
-  Log('Total errors: ' + IntToStr(errors));
+  Log('Errors: ' + IntToStr(errors));
 
-  filename := ChangeFileExt(filename, '.ino');
-  Log('Generating output file ' + filename);
-
+  Inc(screenIndex);
 end;
 
 procedure TfrmMainMenu.btnParseClick(Sender: TObject);
-var i : Integer;
+var i, j, x, total, len, numbersPerLine : Integer;
+    txtFile: TextFile;
+    fileName, s: String;
 begin
 
   Log('Parsing started');
   DirectoryEdit1.Enabled := false;
   btnSearch.Enabled := false;
   btnParse.Enabled := false;
+  clearObjects;
+  checked := 0;
+  errors := 0;
+
   for i := 0 to myFilesList.Count-1 do
       if myFilesList.Checked[i] then
          parseFile(myFilesList.Items.Strings[i]);
+
+  if errors > 0 then
+     begin
+       Log(IntToStr(errors) + ' errors found while parsing.');
+       Log('Operation aborted.');
+       setStatus('Operation aborted.');
+       abort;
+     end;
+
+  filename := DirectoryEdit1.Directory + '\Screens.ino';
+  setStatus('Generating output file ' + fileName);
+  Log('Generating output file ' + filename);
+
+  total := 0;
+
+  AssignFile(txtFile, fileName);
+  try
+    Rewrite(txtFile);
+    WriteLn(txtFile, '/**');
+    WriteLn(txtFile, '* FormParser v.1.0.0 by Themelis Christos');
+    WriteLn(txtFile, '* ');
+    WriteLn(txtFile, '* Autogenerated file');
+    WriteLn(txtFile, '* Screens: ' + IntToStr(screenIndex));
+    WriteLn(txtFile, '*/');
+    WriteLn(txtFile, '');
+    WriteLn(txtFile, 'struct myObject {');
+    WriteLn(txtFile, '  String name;');
+    WriteLn(txtFile, '  bool enabled;');
+    WriteLn(txtFile, '  int left;');
+    WriteLn(txtFile, '  int top;');
+    WriteLn(txtFile, '  int height;');
+    WriteLn(txtFile, '  int width;');
+    WriteLn(txtFile, '  String objType;');
+    WriteLn(txtFile, '  String text;');
+    WriteLn(txtFile, '  String onClick;');
+    WriteLn(txtFile, '  int fontHeight;');
+    WriteLn(txtFile, '  byte pictureData[];');
+    WriteLn(txtFile, '};');
+    WriteLn(txtFile, '');
+    WriteLn(txtFile, 'struct myScreen {');
+    WriteLn(txtFile, '  int count;');
+    WriteLn(txtFile, '  myObject myObjects[];');
+    WriteLn(txtFile, '};');
+    WriteLn(txtFile, '');
+    WriteLn(txtFile, 'struct myObject myObjects[' + IntToStr(maxObjectsInScreen-1) + '];');
+    WriteLn(txtFile, 'struct myScreen myScreens[' + IntToStr(screenIndex) + '];');
+    WriteLn(txtFile, '');
+    for i := 0 to screenIndex - 1 do
+      begin
+        WriteLn(txtFile, '');
+        WriteLn(txtFile, '/**');
+        WriteLn(txtFile, '* Screen: ' + myScreens[i].myObjects[0].name);
+        WriteLn(txtFile, '*/');
+        for j := 1 to myScreens[i].count - 1 do
+          begin
+            WriteLn(txtFile, '');
+            WriteLn(txtFile, '// Object: ' + myScreens[i].myObjects[j].name);
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].name = "' + myScreens[i].myObjects[j].name + '";');
+            if myScreens[i].myObjects[j].enabled = true then
+               WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].enabled = true;')
+            else
+               WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].enabled = false;');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].left = ' + IntToStr(myScreens[i].myObjects[j].left) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].top = ' + IntToStr(myScreens[i].myObjects[j].top) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].height = ' + IntToStr(myScreens[i].myObjects[j].height) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].width = ' + IntToStr(myScreens[i].myObjects[j].width) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].objType = "' + myScreens[i].myObjects[j].objType + '";');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].text = "' + myScreens[i].myObjects[j].text + '";');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].onClick = "' + myScreens[i].myObjects[j].OnClick + '";');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].fontHeight = ' + IntToStr(myScreens[i].myObjects[j].FontHeight) + ';');
+            len := length(myScreens[i].myObjects[j].PictureData);
+            if len > 0 then
+               begin
+                 WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[] = {');
+                 x := 1;
+                 s := '';
+                 numbersPerLine := 0;
+                 while x < len do
+                   begin
+                     s := s + '0x' + Copy(myScreens[i].myObjects[j].PictureData, x, 2) + ', ';
+                     Inc(numbersPerLine);
+                     if numbersPerLine > 9 then
+                        begin
+                          if (x+2) >= len then
+                             WriteLn(txtFile, '  ' + Copy(s, 1, length(s)-2))
+                          else
+                             WriteLn(txtFile, '  ' + s);
+                          s := '';
+                          numbersPerLine := 0;
+                        end;
+                     x := x + 2;
+                   end;
+                 if length(s) > 0 then
+                    WriteLn(txtFile, '  ' + Copy(s, 1, length(s)-2));
+                 WriteLn(txtFile, '};');
+               end
+            else
+               WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[] = null;');
+            Inc(total);
+          end;
+      end;
+    WriteLn(txtFile, '');
+    WriteLn(txtFile, '/**');
+    WriteLn(txtFile, '* Total objects: ' + IntToStr(total));
+    WriteLn(txtFile, '* Autogenerated file ends.');
+    WriteLn(txtFile, '*/');
+  finally
+    CloseFile(txtFile);
+  end;
+
+  AssignFile(TxtFile, DirectoryEdit1.Directory + '\' + FormatDateTime('yyyymmdd-hhmmss', Now) + '.log');
+  try
+    Rewrite(txtFile);
+    WriteLn(txtFile, Memo1.Lines.GetText);
+  finally
+    CloseFile(txtFile);
+  end;
+
+
   DirectoryEdit1.Enabled := true;
   btnSearch.Enabled := true;
   btnParse.Enabled := true;
 
+  Log('Operation completed');
   setStatus('Operation completed');
 end;
 
