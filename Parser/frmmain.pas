@@ -379,7 +379,7 @@ begin
     WriteLn(txtFile, '* Screens: ' + IntToStr(screenIndex));
     WriteLn(txtFile, '*/');
     WriteLn(txtFile, '');
-    WriteLn(txtFile, 'struct myObject {');
+    WriteLn(txtFile, 'typedef struct Object {');
     WriteLn(txtFile, '  String name;');
     WriteLn(txtFile, '  bool enabled;');
     WriteLn(txtFile, '  int left;');
@@ -391,16 +391,16 @@ begin
     WriteLn(txtFile, '  String onClick;');
     WriteLn(txtFile, '  int fontHeight;');
     WriteLn(txtFile, '  byte pictureData[];');
-    WriteLn(txtFile, '};');
+    WriteLn(txtFile, '}myObject;');
     WriteLn(txtFile, '');
-    WriteLn(txtFile, 'struct myScreen {');
+    WriteLn(txtFile, 'typedef struct myScreen {');
     WriteLn(txtFile, '  int count;');
-    WriteLn(txtFile, '  myObject myObjects[];');
+    WriteLn(txtFile, '  myObject myObjects[' + IntToStr(maxObjectsInScreen-1) + '];');
     WriteLn(txtFile, '};');
     WriteLn(txtFile, '');
-    WriteLn(txtFile, 'struct myObject myObjects[' + IntToStr(maxObjectsInScreen-1) + '];');
-    WriteLn(txtFile, 'struct myScreen myScreens[' + IntToStr(screenIndex) + '];');
+    WriteLn(txtFile, 'myScreen myScreens[' + IntToStr(screenIndex) + '];');
     WriteLn(txtFile, '');
+    WriteLn(txtFile, 'void initScreens() {');
     for i := 0 to screenIndex - 1 do
       begin
         WriteLn(txtFile, '');
@@ -427,7 +427,7 @@ begin
             len := length(myScreens[i].myObjects[j].PictureData);
             if len > 0 then
                begin
-                 WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[] = {');
+                 WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[' + IntToStr((len div 2)+1) + '] = {');
                  x := 1;
                  s := '';
                  numbersPerLine := 0;
@@ -449,12 +449,13 @@ begin
                  if length(s) > 0 then
                     WriteLn(txtFile, '  ' + Copy(s, 1, length(s)-2));
                  WriteLn(txtFile, '};');
-               end
-            else
-               WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[] = null;');
+               end;
+            //else
+            //   WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].pictureData[] = { 0xFF, 0xFF };');
             Inc(total);
           end;
       end;
+    WriteLn(txtFile, '}');
     WriteLn(txtFile, '');
     WriteLn(txtFile, '/**');
     WriteLn(txtFile, '* Total objects: ' + IntToStr(total));

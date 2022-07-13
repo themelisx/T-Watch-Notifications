@@ -9,6 +9,7 @@ Android/.google
 UI/backup
 Parser/backup
 Parser/lib
+*.exe
 
 # Local configuration file (sdk path, etc)
 local.properties
