@@ -17,7 +17,10 @@ type
     btnParse: TButton;
     btnSettings: TButton;
     childAbsPos: TCheckBox;
+    searchRecursively: TCheckBox;
     DirectoryEdit1: TDirectoryEdit;
+    GroupBox1: TGroupBox;
+    GroupBox2: TGroupBox;
     Label1: TLabel;
     Label3: TLabel;
     Memo1: TMemo;
@@ -53,9 +56,10 @@ type
     OnClick: String;
     enabled: Boolean;
     FontHeight: Integer;
+    FontColor: LongInt;
+    BackColor: LongInt;
     PictureData: String;
-    //TODO: Text Color
-    //      Background color
+    Visible: String;
   end;
 
   S_Screen = record
@@ -103,7 +107,7 @@ begin
   ignored := 0;
 
   ListFileDir(DirectoryEdit1.Directory + '\');
-  //myFilesList.CheckAll(cbChecked, 0);
+  myFilesList.CheckAll(cbChecked);
 
   Log('Operation completed. Scanned ' +
                  IntToStr(directories) + ' directories and found ' +
@@ -128,16 +132,19 @@ begin
   for i := 0 to 49 do
     for x := 0 to 49 do
         begin
-          myScreens[i].myObjects[x].name := '';
-          myScreens[i].myObjects[x].objType := '';
-          myScreens[i].myObjects[x].left := -1;
-          myScreens[i].myObjects[x].top := -1;
-          myScreens[i].myObjects[x].height := -1;
-          myScreens[i].myObjects[x].width := -1;
-          myScreens[i].myObjects[x].text := '';
+          myScreens[i].myObjects[x].Name := '';
+          myScreens[i].myObjects[x].ObjType := '';
+          myScreens[i].myObjects[x].Left := -1;
+          myScreens[i].myObjects[x].Top := -1;
+          myScreens[i].myObjects[x].Height := -1;
+          myScreens[i].myObjects[x].Width := -1;
+          myScreens[i].myObjects[x].Text := '';
           myScreens[i].myObjects[x].OnClick := '';
-          myScreens[i].myObjects[x].enabled := true;
+          myScreens[i].myObjects[x].Enabled := true;
+          myScreens[i].myObjects[x].Visible := 'true';
           myScreens[i].myObjects[x].FontHeight := 0;
+          myScreens[i].myObjects[x].FontColor := -1;
+          myScreens[i].myObjects[x].BackColor := -1;
           myScreens[i].myObjects[x].PictureData := '';
         end;
 end;
@@ -273,6 +280,14 @@ begin
               myScreens[screenIndex].myObjects[totalObjects].onClick := Copy(line, 11, length(line)-10)
             else if (line.startsWith('Font.Height')) then
               myScreens[screenIndex].myObjects[totalObjects].FontHeight := StrToInt(Copy(line, 15, length(line)-14))
+            else if (line.startsWith('Font.Color')) then
+              myScreens[screenIndex].myObjects[totalObjects].FontColor := StrToInt(Copy(line, 14, length(line)-13))
+            else if (line.startsWith('Color')) then
+              myScreens[screenIndex].myObjects[totalObjects].BackColor := StrToInt(Copy(line, 9, length(line)-8))
+            else if (line.startsWith('Visible')) then
+              myScreens[screenIndex].myObjects[totalObjects].Visible := LowerCase(Copy(line, 11, length(line)-10));
+            //Font.Color
+            //Color
 
             //BorderSpacing.Right
           end;
@@ -416,6 +431,7 @@ begin
                WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].enabled = true;')
             else
                WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].enabled = false;');
+
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].left = ' + IntToStr(myScreens[i].myObjects[j].left) + ';');
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].top = ' + IntToStr(myScreens[i].myObjects[j].top) + ';');
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].height = ' + IntToStr(myScreens[i].myObjects[j].height) + ';');
@@ -424,6 +440,8 @@ begin
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].text = "' + myScreens[i].myObjects[j].text + '";');
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].onClick = "' + myScreens[i].myObjects[j].OnClick + '";');
             WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].fontHeight = ' + IntToStr(myScreens[i].myObjects[j].FontHeight) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].fontColor = ' + IntToStr(myScreens[i].myObjects[j].FontColor) + ';');
+            WriteLn(txtFile, ' myScreens[' + IntToStr(i) + '].myObjects[' + IntToStr(j-1) + '].backColor = ' + IntToStr(myScreens[i].myObjects[j].BackColor) + ';');
             len := length(myScreens[i].myObjects[j].PictureData);
             if len > 0 then
                begin
@@ -520,7 +538,7 @@ procedure TfrmMainMenu.ListFileDir(Path: string);
            end
         else
             begin
-                if (SR.Name <> '.') and (SR.Name <> '..') then
+                if (SR.Name <> '.') and (SR.Name <> '..') and searchRecursively.Checked then
                    ListFileDir(Path + SR.Name + '\');
             end;
       until FindNext(SR) <> 0;
