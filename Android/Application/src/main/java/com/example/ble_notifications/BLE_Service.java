@@ -162,10 +162,14 @@ public class BLE_Service extends Service {
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
-
+        
         Intent notificationIntent = new Intent(this.getApplicationContext(), MainActivity.class);
-        PendingIntent pendingIntent =
-                PendingIntent.getActivity(this.getApplicationContext(), 300, notificationIntent, 0);
+        PendingIntent pendingIntent = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_MUTABLE);
+        } else {
+            pendingIntent = PendingIntent.getActivity(this.getApplicationContext(), 0, notificationIntent, PendingIntent.FLAG_ONE_SHOT);
+        }
 
         Notification notification = new NotificationCompat.Builder(this.getApplicationContext(), CHANNEL_ID)
                 .setContentTitle("ESP32 Smartwatch")
